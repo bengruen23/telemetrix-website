@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'; object-src 'none';">
     <title>TELEMETRIX</title>
     
     <!-- Favicon -->
@@ -72,6 +72,7 @@
             letter-spacing: 2px;
             color: var(--text);
             text-decoration: none;
+            cursor: pointer;
         }
         
         .nav {
@@ -85,6 +86,7 @@
             font-weight: 400;
             transition: color 0.2s;
             font-size: 14px;
+            cursor: pointer;
         }
         
         .nav a:hover,
@@ -183,6 +185,7 @@
         .cta-secondary {
             border: 1px solid var(--border);
             color: var(--text);
+            cursor: pointer;
         }
         
         .cta-secondary:hover {
@@ -493,12 +496,12 @@
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <a href="#" class="logo" onclick="showPage('home')">TELEMETRIX</a>
+                <div class="logo" data-page="home">TELEMETRIX</div>
                 <nav class="nav">
-                    <a href="#" onclick="showPage('home')" id="nav-home" class="active">Home</a>
-                    <a href="#" onclick="showPage('about')" id="nav-about">About</a>
-                    <a href="#" onclick="showPage('episodes')" id="nav-episodes">Episodes</a>
-                    <a href="#" onclick="showPage('book')" id="nav-book">Book</a>
+                    <a data-page="home" class="nav-link active">Home</a>
+                    <a data-page="about" class="nav-link">About</a>
+                    <a data-page="episodes" class="nav-link">Episodes</a>
+                    <a data-page="book" class="nav-link">Book</a>
                 </nav>
                 <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="book-btn" target="_blank">Book Recording</a>
             </div>
@@ -515,7 +518,7 @@
                 
                 <div class="cta-group">
                     <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="cta cta-primary" target="_blank">Record with us</a>
-                    <a href="#" class="cta cta-secondary" onclick="showPage('about')">Learn more</a>
+                    <div class="cta cta-secondary" data-page="about">Learn more</div>
                 </div>
             </section>
             
@@ -726,7 +729,58 @@
     </div>
 
     <script>
-        <script src="script.js"></script>
+        // Wait for DOM to load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Navigation functionality
+            function showPage(pageId) {
+                // Hide all pages
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.remove('active');
+                });
+                
+                // Show selected page
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                }
+                
+                // Update nav
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                const activeNavLink = document.querySelector(`.nav-link[data-page="${pageId}"]`);
+                if (activeNavLink) {
+                    activeNavLink.classList.add('active');
+                }
+                
+                // Update URL
+                window.history.pushState({page: pageId}, '', `#${pageId}`);
+            }
+            
+            // Add event listeners to all navigation elements
+            document.querySelectorAll('[data-page]').forEach(element => {
+                element.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const pageId = this.getAttribute('data-page');
+                    showPage(pageId);
+                });
+            });
+            
+            // Handle browser back/forward
+            window.addEventListener('popstate', function(event) {
+                const page = event.state?.page || 'home';
+                showPage(page);
+            });
+            
+            // Initialize based on URL hash
+            const currentHash = window.location.hash.substring(1);
+            const initialPage = currentHash || 'home';
+            showPage(initialPage);
+            
+            // Set initial state
+            window.history.replaceState({page: initialPage}, '', `#${initialPage}`);
+        });
     </script>
 </body>
 </html>
