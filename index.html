@@ -1,884 +1,522 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'; object-src 'none';">
-    <title>TELEMETRIX</title>
-    
-    <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='none' stroke='%23ff6b1a' stroke-width='1'/%3E%3Ccircle cx='12' cy='12' r='3' fill='%23ff6b1a'/%3E%3C/svg%3E">
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --bg: #0a0a0a;
-            --bg-card: #111111;
-            --text: #ffffff;
-            --text-muted: #666666;
-            --accent: #ff6b1a;
-            --border: rgba(255, 255, 255, 0.08);
-            --mono: 'JetBrains Mono', monospace;
-            --sans: 'Inter', system-ui, sans-serif;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: var(--sans);
-            font-size: 15px;
-            line-height: 1.5;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-        
-        /* Header */
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            z-index: 100;
-        }
-        
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 64px;
-        }
-        
-        .logo {
-            font-family: var(--mono);
-            font-weight: 600;
-            font-size: 20px;
-            letter-spacing: 2px;
-            color: var(--text);
-            text-decoration: none;
-            cursor: pointer;
-        }
-        
-        .nav {
-            display: flex;
-            gap: 32px;
-        }
-        
-        .nav a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 400;
-            transition: color 0.2s;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        
-        .nav a:hover,
-        .nav a.active {
-            color: var(--text);
-        }
-        
-        /* Mobile Menu */
-        .mobile-menu-btn {
-            display: none;
-            flex-direction: column;
-            cursor: pointer;
-            padding: 8px;
-            gap: 4px;
-        }
-        
-        .mobile-menu-btn span {
-            width: 20px;
-            height: 2px;
-            background: var(--text);
-            transition: all 0.3s ease;
-        }
-        
-        .mobile-menu-btn.active span:nth-child(1) {
-            transform: rotate(45deg) translate(5px, 5px);
-        }
-        
-        .mobile-menu-btn.active span:nth-child(2) {
-            opacity: 0;
-        }
-        
-        .mobile-menu-btn.active span:nth-child(3) {
-            transform: rotate(-45deg) translate(7px, -6px);
-        }
-        
-        .mobile-nav {
-            display: none;
-            position: fixed;
-            top: 64px;
-            left: 0;
-            right: 0;
-            background: rgba(10, 10, 10, 0.98);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            padding: 24px;
-            z-index: 99;
-        }
-        
-        .mobile-nav.active {
-            display: block;
-        }
-        
-        .mobile-nav a {
-            display: block;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 400;
-            font-size: 16px;
-            padding: 16px 0;
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        
-        .mobile-nav a:last-child {
-            border-bottom: none;
-        }
-        
-        .mobile-nav a:hover,
-        .mobile-nav a.active {
-            color: var(--text);
-        }
-        
-        .book-btn {
-            background: var(--accent);
-            color: var(--bg);
-            padding: 8px 16px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-        
-        .book-btn:hover {
-            background: #ff7b2a;
-            transform: translateY(-1px);
-        }
-        
-        /* Pages */
-        .page {
-            display: none;
-            padding-top: 64px;
-            min-height: 100vh;
-        }
-        
-        .page.active {
-            display: block;
-        }
-        
-        /* Home Page */
-        .hero {
-            padding: 100px 0;
-            text-align: center;
-        }
-        
-        .hero h1 {
-            font-family: var(--mono);
-            font-size: 52px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            margin-bottom: 24px;
-        }
-        
-        .hero .tagline {
-            font-size: 20px;
-            color: var(--text-muted);
-            margin-bottom: 16px;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-            font-weight: 300;
-        }
-        
-        .hero .subtitle {
-            font-size: 16px;
-            color: var(--text-muted);
-            margin-bottom: 48px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.6;
-        }
-        
-        .cta-group {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            margin-bottom: 120px;
-        }
-        
-        .cta {
-            display: inline-block;
-            padding: 14px 28px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.2s;
-            font-size: 14px;
-        }
-        
-        .cta-primary {
-            background: var(--accent);
-            color: var(--bg);
-        }
-        
-        .cta-primary:hover {
-            background: #ff7b2a;
-            transform: translateY(-1px);
-        }
-        
-        .cta-secondary {
-            border: 1px solid var(--border);
-            color: var(--text);
-            cursor: pointer;
-        }
-        
-        .cta-secondary:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-        
-        .themes {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            margin-bottom: 80px;
-        }
-        
-        .theme {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 32px;
-            transition: all 0.2s;
-        }
-        
-        .theme:hover {
-            border-color: rgba(255, 107, 26, 0.3);
-            transform: translateY(-2px);
-        }
-        
-        .theme-title {
-            font-family: var(--mono);
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--accent);
-            margin-bottom: 12px;
-            letter-spacing: 1px;
-        }
-        
-        .theme-desc {
-            color: var(--text-muted);
-            font-size: 14px;
-            line-height: 1.6;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 32px;
-            margin-bottom: 80px;
-        }
-        
-        .stat {
-            text-align: center;
-        }
-        
-        .stat-number {
-            font-family: var(--mono);
-            font-size: 32px;
-            font-weight: 600;
-            color: var(--accent);
-            margin-bottom: 8px;
-        }
-        
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        /* About Page */
-        .about-content {
-            max-width: 900px;
-            margin: 80px auto;
-        }
-        
-        .about h2 {
-            font-family: var(--mono);
-            font-size: 36px;
-            margin-bottom: 32px;
-            font-weight: 600;
-        }
-        
-        .about p {
-            margin-bottom: 24px;
-            color: var(--text-muted);
-            font-size: 16px;
-            line-height: 1.7;
-        }
-        
-        .about p.large {
-            font-size: 18px;
-            color: var(--text);
-            margin-bottom: 40px;
-        }
-        
-        .host-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 40px;
-            margin: 48px 0;
-        }
-        
-        .host-name {
-            font-family: var(--mono);
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        
-        .host-title {
-            color: var(--accent);
-            font-weight: 500;
-            margin-bottom: 24px;
-            font-size: 16px;
-        }
-        
-        .host-bio {
-            color: var(--text-muted);
-            line-height: 1.7;
-            margin-bottom: 32px;
-            font-size: 16px;
-        }
-        
-        .focus-areas {
-            margin: 0;
-        }
-        
-        .focus-areas h3 {
-            font-family: var(--mono);
-            font-size: 14px;
-            margin-bottom: 20px;
-            color: var(--accent);
-            letter-spacing: 2px;
-        }
-        
-        .focus-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-        }
-        
-        .focus-item {
-            background: rgba(255, 107, 26, 0.05);
-            border: 1px solid rgba(255, 107, 26, 0.2);
-            padding: 16px;
-            border-radius: 6px;
-            font-size: 13px;
-            color: var(--text);
-            font-weight: 500;
-        }
-        
-        /* Episodes Page */
-        .episodes-content {
-            padding: 80px 0;
-        }
-        
-        .coming-soon {
-            text-align: center;
-            padding: 120px 0;
-        }
-        
-        .coming-soon h2 {
-            font-family: var(--mono);
-            font-size: 36px;
-            margin-bottom: 16px;
-            color: var(--accent);
-        }
-        
-        .coming-soon p {
-            color: var(--text-muted);
-            font-size: 18px;
-        }
-        
-        /* Book Page */
-        .book-hero {
-            text-align: center;
-            padding: 80px 0 40px 0;
-        }
-        
-        .book-hero h1 {
-            font-family: var(--mono);
-            font-size: 42px;
-            margin-bottom: 16px;
-            font-weight: 600;
-        }
-        
-        .book-hero .subtitle {
-            font-size: 20px;
-            color: var(--text-muted);
-            margin-bottom: 24px;
-            font-weight: 300;
-        }
-        
-        .book-status {
-            display: inline-block;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-family: var(--mono);
-            font-size: 12px;
-            letter-spacing: 1px;
-            color: var(--accent);
-        }
-        
-        .chapters {
-            max-width: 1000px;
-            margin: 80px auto;
-        }
-        
-        .chapter-list {
-            display: grid;
-            gap: 16px;
-        }
-        
-        .chapter {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 28px;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-        }
-        
-        .chapter:hover {
-            border-color: var(--accent);
-            transform: translateY(-2px);
-        }
-        
-        .chapter-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-        
-        .chapter-number {
-            font-family: var(--mono);
-            font-size: 14px;
-            color: var(--accent);
-            font-weight: 600;
-        }
-        
-        .chapter-status {
-            font-family: var(--mono);
-            font-size: 11px;
-            color: var(--text-muted);
-            letter-spacing: 1px;
-        }
-        
-        .chapter-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: var(--text);
-        }
-        
-        .chapter-desc {
-            color: var(--text-muted);
-            font-size: 15px;
-            line-height: 1.6;
-        }
-        
-        .chapter.completed .chapter-status {
-            color: var(--accent);
-        }
-        
-        /* Mobile */
-        @media (max-width: 768px) {
-            .container {
-                padding: 0 16px;
-            }
-            
-            .nav {
-                display: none;
-            }
-            
-            .mobile-menu-btn {
-                display: flex;
-            }
-            
-            .hero h1 {
-                font-size: 36px;
-            }
-            
-            .cta-group {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .themes {
-                grid-template-columns: 1fr;
-            }
-            
-            .stats {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 24px;
-            }
-            
-            .book-hero h1 {
-                font-size: 28px;
-            }
-            
-            .focus-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TELEMETRIX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-base:        #0a0a0c;
+    --bg-elevated:    #15161a;
+    --ink-primary:    #f4f1ea;
+    --ink-secondary:  rgba(244, 241, 234, 0.65);
+    --ink-tertiary:   rgba(244, 241, 234, 0.40);
+    --rule:           rgba(244, 241, 234, 0.10);
+    --rule-strong:    rgba(244, 241, 234, 0.20);
+    --accent:         #e8924a;
+    --accent-deep:    #c46a1e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--ink-primary);
+    background: var(--bg-base);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.5;
+  }
+
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  /* ---------- Nav ---------- */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    padding: 1.25rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    color: var(--ink-primary);
+  }
+  .nav__brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    letter-spacing: 0.18em;
+    font-weight: 500;
+  }
+  .nav__links { display: flex; gap: 2rem; font-size: 0.875rem; }
+  .nav__links a {
+    color: var(--ink-secondary);
+    text-decoration: none;
+    transition: color 150ms;
+  }
+  .nav__links a:hover { color: var(--ink-primary); }
+  .nav__cta {
+    font-size: 0.875rem;
+    border: 1px solid var(--rule-strong);
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    text-decoration: none;
+    color: var(--ink-primary);
+    transition: border-color 150ms, background 150ms;
+  }
+  .nav__cta:hover { border-color: var(--accent); background: rgba(232, 146, 74, 0.08); }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    background: var(--bg-base);
+  }
+
+  /* THE OMBRE — its own visible layer.
+     A radial bloom of warm amber in the lower right, fading through
+     deep red-brown to near-black across the canvas. This exists
+     independently of the photo, so it's visible on first paint and
+     even if the image fails. */
+  .hero__ombre {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      radial-gradient(ellipse 90% 70% at 80% 90%,
+        rgba(232, 146, 74, 0.55) 0%,
+        rgba(196, 106, 30, 0.35) 25%,
+        rgba(120, 50, 20, 0.25) 50%,
+        rgba(40, 18, 12, 0.15) 75%,
+        rgba(10, 10, 12, 0) 100%),
+      linear-gradient(180deg, #0a0a0c 0%, #14100d 100%);
+  }
+
+  /* The photo sits as a feature element in the lower right,
+     not a full-bleed background. Lets the ombre breathe. */
+  .hero__photo {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 55%;
+    height: 75%;
+    z-index: 2;
+    background-image: url('https://plus.unsplash.com/premium_photo-1664195074951-fe91ec456eed?w=1800&auto=format&fit=crop&q=80');
+    background-size: cover;
+    background-position: center;
+    /* Soft mask so the photo blends into the ombre instead of
+       sitting in a hard rectangle. The mic stays sharp; edges fade. */
+    -webkit-mask-image: radial-gradient(ellipse 80% 80% at 70% 60%, #000 30%, transparent 90%);
+            mask-image: radial-gradient(ellipse 80% 80% at 70% 60%, #000 30%, transparent 90%);
+    mix-blend-mode: lighten;
+    opacity: 0.85;
+  }
+
+  /* Subtle grain over everything to prevent banding */
+  .hero__grain {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+  }
+
+  .hero__container {
+    position: relative;
+    z-index: 4;
+    max-width: 1280px;
+    margin: 0 auto;
+    width: 100%;
+    min-height: 100vh;
+    padding: 6rem 2rem 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  .hero__eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .hero__eyebrow::before {
+    content: "";
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--accent);
+  }
+
+  .hero__title {
+    font-size: clamp(2.5rem, 7vw, 6.25rem);
+    font-weight: 500;
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    max-width: 16ch;
+    margin-bottom: 2rem;
+    color: var(--ink-primary);
+  }
+
+  .hero__sub {
+    font-size: clamp(1.125rem, 1.4vw, 1.375rem);
+    font-weight: 400;
+    line-height: 1.45;
+    color: var(--ink-secondary);
+    max-width: 48ch;
+    margin-bottom: 3rem;
+  }
+
+  .hero__actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    border-radius: 999px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: transform 150ms, background 150ms, border-color 150ms;
+  }
+  .btn--primary {
+    background: var(--ink-primary);
+    color: var(--bg-base);
+  }
+  .btn--primary:hover { transform: translateY(-1px); }
+  .btn--ghost {
+    border: 1px solid var(--rule-strong);
+    color: var(--ink-primary);
+  }
+  .btn--ghost:hover { border-color: var(--ink-primary); }
+
+  .hero__meta {
+    position: absolute;
+    bottom: 2rem;
+    left: 2rem;
+    right: 2rem;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--ink-tertiary);
+    letter-spacing: 0.08em;
+    z-index: 5;
+  }
+
+  /* ---------- Marquee ---------- */
+  .marquee {
+    background: var(--bg-base);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 1.5rem 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .marquee__track {
+    display: inline-flex;
+    gap: 4rem;
+    animation: scroll 40s linear infinite;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8125rem;
+    letter-spacing: 0.12em;
+    color: var(--ink-tertiary);
+  }
+  .marquee__track span::before {
+    content: "◆ ";
+    color: var(--accent);
+    margin-right: 0.75rem;
+  }
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ---------- Sections — ALL DARK ---------- */
+  .section {
+    background: var(--bg-base);
+    color: var(--ink-primary);
+    padding: 8rem 2rem;
+    position: relative;
+  }
+  .section--elevated {
+    background: var(--bg-elevated);
+  }
+  .section__container { max-width: 1280px; margin: 0 auto; }
+  .section__eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-tertiary);
+    margin-bottom: 2rem;
+  }
+  .section__title {
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    max-width: 22ch;
+    margin-bottom: 2rem;
+  }
+  .section__lead {
+    font-size: clamp(1.125rem, 1.4vw, 1.375rem);
+    line-height: 1.55;
+    color: var(--ink-secondary);
+    max-width: 60ch;
+  }
+
+  /* Coverage areas */
+  .coverage {
+    margin-top: 5rem;
+    border-top: 1px solid var(--rule);
+  }
+  .coverage__row {
+    display: grid;
+    grid-template-columns: 80px 1fr 2fr;
+    gap: 2rem;
+    padding: 1.75rem 0;
+    border-bottom: 1px solid var(--rule);
+    align-items: baseline;
+    transition: padding 200ms, background 200ms;
+  }
+  .coverage__row:hover {
+    padding-left: 0.5rem;
+    background: rgba(232, 146, 74, 0.03);
+  }
+  .coverage__num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--ink-tertiary);
+    letter-spacing: 0.1em;
+  }
+  .coverage__name {
+    font-size: 1.25rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--ink-primary);
+  }
+  .coverage__desc {
+    font-size: 0.9375rem;
+    color: var(--ink-secondary);
+    line-height: 1.5;
+  }
+
+  /* Quote section gets a subtle ombre too */
+  .quote {
+    background:
+      radial-gradient(ellipse 60% 80% at 90% 50%,
+        rgba(232, 146, 74, 0.10) 0%,
+        rgba(10, 10, 12, 0) 70%),
+      var(--bg-base);
+    color: var(--ink-primary);
+    padding: 8rem 2rem;
+  }
+  .quote__container { max-width: 1100px; margin: 0 auto; }
+  .quote__text {
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 400;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+    margin-bottom: 2rem;
+  }
+  .quote__attr {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8125rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-tertiary);
+  }
+
+  /* Footer */
+  footer {
+    background: var(--bg-base);
+    color: var(--ink-tertiary);
+    padding: 4rem 2rem 2rem;
+    border-top: 1px solid var(--rule);
+  }
+  .footer__container {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .footer__brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.5rem;
+    letter-spacing: 0.15em;
+    color: var(--ink-primary);
+  }
+  .footer__meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+  }
+
+  @media (max-width: 720px) {
+    .nav { padding: 1rem 1.25rem; }
+    .nav__links { display: none; }
+    .hero__container { padding: 5rem 1.25rem 6rem; }
+    .hero__meta { display: none; }
+    .hero__photo {
+      width: 100%;
+      height: 50%;
+      opacity: 0.45;
+    }
+    .hero__ombre {
+      background:
+        radial-gradient(ellipse 100% 60% at 50% 90%,
+          rgba(232, 146, 74, 0.45) 0%,
+          rgba(120, 50, 20, 0.25) 40%,
+          rgba(10, 10, 12, 0) 80%),
+        linear-gradient(180deg, #0a0a0c 0%, #14100d 100%);
+    }
+    .section, .quote { padding: 5rem 1.25rem; }
+    .coverage__row {
+      grid-template-columns: 60px 1fr;
+      grid-template-rows: auto auto;
+    }
+    .coverage__desc { grid-column: 2; }
+  }
+</style>
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo" data-page="home">TELEMETRIX</div>
-                <nav class="nav">
-                    <a data-page="home" class="nav-link active">Home</a>
-                    <a data-page="about" class="nav-link">About</a>
-                    <a data-page="episodes" class="nav-link">Episodes</a>
-                    <a data-page="book" class="nav-link">Book</a>
-                </nav>
-                <div class="mobile-menu-btn" id="mobile-menu-btn">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-                <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="book-btn" target="_blank">Book Recording</a>
-            </div>
-        </div>
-        
-        <!-- Mobile Navigation -->
-        <div class="mobile-nav" id="mobile-nav">
-            <a data-page="home" class="mobile-nav-link active">Home</a>
-            <a data-page="about" class="mobile-nav-link">About</a>
-            <a data-page="episodes" class="mobile-nav-link">Episodes</a>
-            <a data-page="book" class="mobile-nav-link">Book</a>
-        </div>
-    </header>
 
-    <!-- Home Page -->
-    <div id="home" class="page active">
-        <div class="container">
-            <section class="hero">
-                <h1>TELEMETRIX</h1>
-                <p class="tagline">Deep conversations with the builders of a resilient future</p>
-                <p class="subtitle">Covering AI infrastructure, autonomous systems, energy independence, supply chain resilience, defense technology, and the critical systems that will define the next decade.</p>
-                
-                <div class="cta-group">
-                    <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="cta cta-primary" target="_blank">Record with us</a>
-                    <div class="cta cta-secondary" data-page="about">Learn more</div>
-                </div>
-            </section>
-            
-            <section class="themes">
-                <div class="theme">
-                    <div class="theme-title">AI INFRASTRUCTURE</div>
-                    <div class="theme-desc">The compute, networking, and systems architecture enabling the next wave of artificial intelligence deployment at scale.</div>
-                </div>
-                <div class="theme">
-                    <div class="theme-title">AUTONOMOUS SYSTEMS</div>
-                    <div class="theme-desc">Self-driving vehicles, robotics, drones, and the sensing & control systems that let machines operate independently.</div>
-                </div>
-                <div class="theme">
-                    <div class="theme-title">ENERGY INDEPENDENCE</div>
-                    <div class="theme-desc">Clean energy generation, storage, grid intelligence, and the technologies reshaping how we produce and consume power.</div>
-                </div>
-                <div class="theme">
-                    <div class="theme-title">SUPPLY CHAIN RESILIENCE</div>
-                    <div class="theme-desc">Logistics, manufacturing automation, inventory intelligence, and the systems making global trade more robust.</div>
-                </div>
-                <div class="theme">
-                    <div class="theme-title">DEFENSE TECHNOLOGY</div>
-                    <div class="theme-desc">Military innovation, cybersecurity, dual-use technologies, and the companies building critical national security capabilities.</div>
-                </div>
-                <div class="theme">
-                    <div class="theme-title">CRITICAL INFRASTRUCTURE</div>
-                    <div class="theme-desc">Communication networks, industrial control systems, and the foundational technologies that keep modern society running.</div>
-                </div>
-            </section>
-            
-            <section class="stats">
-                <div class="stat">
-                    <div class="stat-number">Q2</div>
-                    <div class="stat-label">Launch</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-number">60</div>
-                    <div class="stat-label">Min Episodes</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-number">100+</div>
-                    <div class="stat-label">Target Companies</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-number">∞</div>
-                    <div class="stat-label">Possibilities</div>
-                </div>
-            </section>
-        </div>
+<nav class="nav">
+  <div class="nav__brand">TELEMETRIX</div>
+  <div class="nav__links">
+    <a href="#about">About</a>
+    <a href="#coverage">Coverage</a>
+    <a href="#book">Book</a>
+  </div>
+  <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="nav__cta">Record with us</a>
+</nav>
+
+<section class="hero">
+  <div class="hero__ombre"></div>
+  <div class="hero__photo"></div>
+  <div class="hero__grain"></div>
+
+  <div class="hero__container">
+    <div class="hero__eyebrow mono">First transmission &middot; Q2 2026</div>
+    <h1 class="hero__title">Deep conversations with the builders of a resilient future.</h1>
+    <p class="hero__sub">A podcast covering the AI infrastructure, autonomous systems, energy, defense, and supply chain technologies that will define the next decade.</p>
+    <div class="hero__actions">
+      <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="btn btn--primary">Record with us &rarr;</a>
+      <a href="#coverage" class="btn btn--ghost">What we cover</a>
     </div>
+  </div>
 
-    <!-- About Page -->
-    <div id="about" class="page">
-        <div class="container">
-            <div class="about-content">
-                <h2>About Telemetrix</h2>
-                
-                <p class="large">The companies building our resilient future don't get enough airtime. While everyone talks about consumer AI, the real action is in infrastructure. These systems that will determine which countries, companies, and communities thrive in an increasingly uncertain world.</p>
-                
-                <p>Telemetrix is where these builders tell their stories. We cover the full spectrum: AI infrastructure that powers autonomous systems, energy technologies that reduce dependence on unstable grids, defense innovations that protect critical assets, supply chain tools that prevent disruptions, and the underlying systems that make modern life possible.</p>
-                
-                <p>Every conversation is designed to extract insights you won't hear elsewhere including the technical details, market dynamics, and strategic thinking behind the most important technologies being built today.</p>
-                
-                <div class="host-card">
-                    <div class="host-name">Ben Gruen</div>
-                    <div class="host-title">Host & Deep Tech Analyst</div>
-                    <div class="host-bio">
-                        Deep tech analyst covering resilient infrastructure, autonomous systems, and defense technology. Currently building intelligence systems for physical asset markets and researching the intersection of AI, energy independence, and national security.
-                    </div>
-                    
-                    <div class="focus-areas">
-                        <h3>COVERAGE AREAS</h3>
-                        <div class="focus-grid">
-                            <div class="focus-item">AI Infrastructure</div>
-                            <div class="focus-item">Autonomous Vehicles</div>
-                            <div class="focus-item">Defense Technology</div>
-                            <div class="focus-item">Energy Independence</div>
-                            <div class="focus-item">Supply Chain Resilience</div>
-                            <div class="focus-item">Industrial Automation</div>
-                            <div class="focus-item">Robotics & Physical AI</div>
-                            <div class="focus-item">Cybersecurity</div>
-                            <div class="focus-item">Critical Infrastructure</div>
-                            <div class="focus-item">Sensor Networks</div>
-                            <div class="focus-item">Edge Computing</div>
-                            <div class="focus-item">Quantum Technologies</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="hero__meta">
+    <span>TX-001 / GAINESVILLE</span>
+    <span>EST. 2026</span>
+  </div>
+</section>
+
+<div class="marquee">
+  <div class="marquee__track">
+    <span>AI INFRASTRUCTURE</span>
+    <span>AUTONOMOUS SYSTEMS</span>
+    <span>ENERGY INDEPENDENCE</span>
+    <span>SUPPLY CHAIN RESILIENCE</span>
+    <span>DEFENSE TECHNOLOGY</span>
+    <span>CRITICAL INFRASTRUCTURE</span>
+    <span>AI INFRASTRUCTURE</span>
+    <span>AUTONOMOUS SYSTEMS</span>
+    <span>ENERGY INDEPENDENCE</span>
+    <span>SUPPLY CHAIN RESILIENCE</span>
+    <span>DEFENSE TECHNOLOGY</span>
+    <span>CRITICAL INFRASTRUCTURE</span>
+  </div>
+</div>
+
+<section class="section" id="about">
+  <div class="section__container">
+    <div class="section__eyebrow">01 / About</div>
+    <h2 class="section__title">The companies building our resilient future don't get enough airtime.</h2>
+    <p class="section__lead">While everyone talks about consumer AI, the real action is in infrastructure &mdash; the systems that will determine which countries, companies, and communities thrive in an increasingly uncertain world. Telemetrix is where these builders tell their stories.</p>
+  </div>
+</section>
+
+<section class="section section--elevated" id="coverage">
+  <div class="section__container">
+    <div class="section__eyebrow">02 / Coverage areas</div>
+    <h2 class="section__title">Six domains. One thesis: physical systems are the next frontier.</h2>
+
+    <div class="coverage">
+      <div class="coverage__row">
+        <div class="coverage__num">001</div>
+        <div class="coverage__name">AI Infrastructure</div>
+        <div class="coverage__desc">The compute, networking, and systems architecture enabling artificial intelligence at scale.</div>
+      </div>
+      <div class="coverage__row">
+        <div class="coverage__num">002</div>
+        <div class="coverage__name">Autonomous Systems</div>
+        <div class="coverage__desc">Self-driving vehicles, robotics, drones, and the sensing &amp; control systems that let machines operate independently.</div>
+      </div>
+      <div class="coverage__row">
+        <div class="coverage__num">003</div>
+        <div class="coverage__name">Energy Independence</div>
+        <div class="coverage__desc">Clean energy generation, storage, grid intelligence, and the technologies reshaping how we produce power.</div>
+      </div>
+      <div class="coverage__row">
+        <div class="coverage__num">004</div>
+        <div class="coverage__name">Supply Chain Resilience</div>
+        <div class="coverage__desc">Logistics, manufacturing automation, inventory intelligence, and the systems making global trade more robust.</div>
+      </div>
+      <div class="coverage__row">
+        <div class="coverage__num">005</div>
+        <div class="coverage__name">Defense Technology</div>
+        <div class="coverage__desc">Military innovation, cybersecurity, dual-use technologies, and the companies building national security capabilities.</div>
+      </div>
+      <div class="coverage__row">
+        <div class="coverage__num">006</div>
+        <div class="coverage__name">Critical Infrastructure</div>
+        <div class="coverage__desc">Communication networks, industrial control systems, and the foundational technologies of modern society.</div>
+      </div>
     </div>
+  </div>
+</section>
 
-    <!-- Episodes Page -->
-    <div id="episodes" class="page">
-        <div class="container">
-            <div class="episodes-content">
-                <div class="coming-soon">
-                    <h2>EPISODES</h2>
-                    <p>First transmissions coming Q2 2026</p>
-                </div>
-            </div>
-        </div>
+<section class="quote">
+  <div class="quote__container">
+    <p class="quote__text">Every conversation is designed to extract insights you won't hear elsewhere &mdash; the technical details, market dynamics, and strategic thinking behind the most important technologies being built today.</p>
+    <div class="quote__attr">&mdash; Ben Gruen, host</div>
+  </div>
+</section>
+
+<section class="section section--elevated" id="book">
+  <div class="section__container">
+    <div class="section__eyebrow">03 / Record with us</div>
+    <h2 class="section__title">Building something that fits the thesis? Let's talk.</h2>
+    <p class="section__lead" style="margin-bottom: 3rem;">Founders, operators, and investors working on AI infrastructure, autonomous systems, energy, defense, and supply chains.</p>
+    <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="btn btn--primary">Book a recording &rarr;</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer__container">
+    <div class="footer__brand">TELEMETRIX</div>
+    <div class="footer__meta">
+      <div>&copy; 2026 &middot; All transmissions reserved</div>
     </div>
+  </div>
+</footer>
 
-    <!-- Book Page -->
-    <div id="book" class="page">
-        <div class="container">
-            <section class="book-hero">
-                <h1>SENSOR FUSION</h1>
-                <p class="subtitle">The Intelligence Layer for Physical Assets</p>
-                <span class="book-status">COMING SOON</span>
-            </section>
-            
-            <div class="chapters">
-                <div class="chapter-list">
-                    <div class="chapter completed">
-                        <div class="chapter-header">
-                            <span class="chapter-number">01</span>
-                            <span class="chapter-status">DRAFTED</span>
-                        </div>
-                        <div class="chapter-title">The Dark Asset Problem</div>
-                        <div class="chapter-desc">Why physical assets are the last major asset class without real-time financial intelligence, and what that means for markets, lending, and economic efficiency.</div>
-                    </div>
-                    
-                    <div class="chapter completed">
-                        <div class="chapter-header">
-                            <span class="chapter-number">02</span>
-                            <span class="chapter-status">DRAFTED</span>
-                        </div>
-                        <div class="chapter-title">Infrastructure Primitives</div>
-                        <div class="chapter-desc">The foundational systems that enable asset intelligence: positioning, sensing, compute, communication, and the protocols that bind them together.</div>
-                    </div>
-                    
-                    <div class="chapter completed">
-                        <div class="chapter-header">
-                            <span class="chapter-number">03</span>
-                            <span class="chapter-status">DRAFTED</span>
-                        </div>
-                        <div class="chapter-title">The Bloomberg Terminal Analogy</div>
-                        <div class="chapter-desc">How financial markets gained real-time intelligence layers in the 1980s and what physical asset markets can learn from that transformation.</div>
-                    </div>
-                    
-                    <div class="chapter">
-                        <div class="chapter-header">
-                            <span class="chapter-number">04</span>
-                            <span class="chapter-status">IN PROGRESS</span>
-                        </div>
-                        <div class="chapter-title">Aircraft Engines: The Beachhead</div>
-                        <div class="chapter-desc">Why commercial aviation engines represent the perfect entry point for asset intelligence, high value, existing telemetry, clear stakeholders, measurable ROI.</div>
-                    </div>
-                    
-                    <div class="chapter">
-                        <div class="chapter-header">
-                            <span class="chapter-number">05</span>
-                            <span class="chapter-status">OUTLINED</span>
-                        </div>
-                        <div class="chapter-title">Autonomous Systems & Asset Intelligence</div>
-                        <div class="chapter-desc">How self-driving cars, delivery robots, and industrial automation create both demand for and suppliers of asset intelligence systems.</div>
-                    </div>
-                    
-                    <div class="chapter">
-                        <div class="chapter-header">
-                            <span class="chapter-number">06</span>
-                            <span class="chapter-status">OUTLINED</span>
-                        </div>
-                        <div class="chapter-title">Defense & Dual-Use Applications</div>
-                        <div class="chapter-desc">How military asset tracking requirements drive innovation in commercial asset intelligence, and the strategic implications of asset visibility.</div>
-                    </div>
-                    
-                    <div class="chapter">
-                        <div class="chapter-header">
-                            <span class="chapter-number">07</span>
-                            <span class="chapter-status">OUTLINED</span>
-                        </div>
-                        <div class="chapter-title">The Venture Capital Matrix</div>
-                        <div class="chapter-desc">Investment patterns, market opportunities, and capital flows in the asset intelligence ecosystem - where the smart money is placing bets.</div>
-                    </div>
-                    
-                    <div class="chapter">
-                        <div class="chapter-header">
-                            <span class="chapter-number">08</span>
-                            <span class="chapter-status">OUTLINED</span>
-                        </div>
-                        <div class="chapter-title">Energy Independence & Asset Networks</div>
-                        <div class="chapter-desc">How distributed energy resources, smart grids, and renewable asset management create new asset intelligence requirements and opportunities.</div>
-                    </div>
-                    
-                    <div class="chapter">
-                        <div class="chapter-header">
-                            <span class="chapter-number">09</span>
-                            <span class="chapter-status">PLANNED</span>
-                        </div>
-                        <div class="chapter-title">Global Competition & Strategic Assets</div>
-                        <div class="chapter-desc">The geopolitical implications of asset intelligence; who controls visibility into critical infrastructure, and what that means for national security.</div>
-                    </div>
-                    
-                    <div class="chapter">
-                        <div class="chapter-header">
-                            <span class="chapter-number">10</span>
-                            <span class="chapter-status">PLANNED</span>
-                        </div>
-                        <div class="chapter-title">Implementation Roadmap</div>
-                        <div class="chapter-desc">Practical steps for building asset intelligence systems; technical architecture, market entry strategies, and execution frameworks for founders and investors.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Wait for DOM to load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Mobile menu functionality
-            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-            const mobileNav = document.getElementById('mobile-nav');
-            
-            mobileMenuBtn.addEventListener('click', function() {
-                mobileMenuBtn.classList.toggle('active');
-                mobileNav.classList.toggle('active');
-            });
-            
-            // Navigation functionality
-            function showPage(pageId) {
-                // Hide all pages
-                document.querySelectorAll('.page').forEach(page => {
-                    page.classList.remove('active');
-                });
-                
-                // Show selected page
-                const targetPage = document.getElementById(pageId);
-                if (targetPage) {
-                    targetPage.classList.add('active');
-                }
-                
-                // Update nav (both desktop and mobile)
-                document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(link => {
-                    link.classList.remove('active');
-                });
-                
-                const activeNavLinks = document.querySelectorAll(`[data-page="${pageId}"]`);
-                activeNavLinks.forEach(link => {
-                    if (link.classList.contains('nav-link') || link.classList.contains('mobile-nav-link')) {
-                        link.classList.add('active');
-                    }
-                });
-                
-                // Close mobile menu after navigation
-                mobileMenuBtn.classList.remove('active');
-                mobileNav.classList.remove('active');
-                
-                // Update URL
-                window.history.pushState({page: pageId}, '', `#${pageId}`);
-            }
-            
-            // Add event listeners to all navigation elements
-            document.querySelectorAll('[data-page]').forEach(element => {
-                element.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const pageId = this.getAttribute('data-page');
-                    showPage(pageId);
-                });
-            });
-            
-            // Handle browser back/forward
-            window.addEventListener('popstate', function(event) {
-                const page = event.state?.page || 'home';
-                showPage(page);
-            });
-            
-            // Initialize based on URL hash
-            const currentHash = window.location.hash.substring(1);
-            const initialPage = currentHash || 'home';
-            showPage(initialPage);
-            
-            // Set initial state
-            window.history.replaceState({page: initialPage}, '', `#${initialPage}`);
-        });
-    </script>
 </body>
 </html>
