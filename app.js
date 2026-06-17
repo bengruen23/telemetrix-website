@@ -3,7 +3,15 @@
 ---------------------------------------------------- */
 const textWrapper = document.querySelector('#hero-title');
 if (textWrapper) {
-  textWrapper.innerHTML = textWrapper.textContent.replace(/\S/g, "<span class='word'><span class='char'>$&</span></span>");
+  const words = textWrapper.textContent.trim().split(' ');
+  textWrapper.innerHTML = '';
+  
+  words.forEach(word => {
+    const wordSpan = document.createElement('span');
+    wordSpan.className = 'word';
+    wordSpan.innerHTML = word.replace(/\S/g, "<span class='char'>$&</span>");
+    textWrapper.appendChild(wordSpan);
+  });
 
   anime.timeline({ loop: false })
     .add({ targets: '.el-eyebrow', opacity: [0, 1], translateY: [10, 0], easing: "easeOutExpo", duration: 1000, delay: 200 })
@@ -22,77 +30,135 @@ window.addEventListener('scroll', () => {
   document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
 });
 
+
 /* ----------------------------------------------------
-   2. THE 3D "BUBBLE" (Three.js)
+   2. THE MORPHING 3D SHAPE (Three.js)
 ---------------------------------------------------- */
-const bubbleContainer = document.getElementById('webgl-bubble');
-let material, sphere, positionAttribute, originalPositions;
-let burstIntensity = 0;
+const webglContainer = document.getElementById('webgl-container');
+let scene, camera, renderer, morphMesh, material;
 
-if (bubbleContainer) {
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(60, bubbleContainer.clientWidth / bubbleContainer.clientHeight, 0.1, 1000);
-  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+// We need two states for the morph target: A Mic and a Sphere. 
+// To morph perfectly, they must have the exact same number of vertices.
+// We use a high-density Sphere and map its points to form a mic initially.
 
-  renderer.setSize(bubbleContainer.clientWidth, bubbleContainer.clientHeight);
+const vertexCount = 1000;
+const micPositions = new Float32Array(vertexCount * 3);
+const spherePositions = new Float32Array(vertexCount * 3);
+
+// Generate Sphere Vertices (The "Bubble")
+for (let i = 0; i < vertexCount; i++) {
+  // Use golden ratio spiral to distribute points evenly on a sphere
+  const phi = Math.acos(1 - 2 * (i + 0.5) / vertexCount);
+  const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+  
+  const r = 1.8; // Radius of the bubble
+  
+  spherePositions[i*3] = r * Math.sin(phi) * Math.cos(theta);
+  spherePositions[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+  spherePositions[i*3+2] = r * Math.cos(phi);
+}
+
+// Generate Microphone Vertices
+for (let i = 0; i < vertexCount; i++) {
+  // We divide the points into three sections: Head, Handle, Base Ring
+  if (i < vertexCount * 0.5) {
+    // Top capsule (Mic head)
+    const phi = Math.acos(1 - 2 * ((i*2) + 0.5) / vertexCount);
+    const theta = Math.PI * (1 + Math.sqrt(5)) * (i*2);
+    const r = 0.5;
+    micPositions[i*3] = r * Math.sin(phi) * Math.cos(theta);
+    micPositions[i*3+1] = (r * Math.sin(phi) * Math.sin(theta)) + 0.5; // Shifted up
+    micPositions[i*3+2] = r * Math.cos(phi);
+  } else if (i < vertexCount * 0.8) {
+    // Handle (Cylinder)
+    const angle = Math.random() * Math.PI * 2;
+    const y = (Math.random() * 1.5) - 1.0; // Between -1.0 and 0.5
+    const r = 0.15;
+    micPositions[i*3] = Math.cos(angle) * r;
+    micPositions[i*3+1] = y;
+    micPositions[i*3+2] = Math.sin(angle) * r;
+  } else {
+    // Base Ring
+    const angle = Math.random() * Math.PI * 2;
+    const r = 0.7;
+    micPositions[i*3] = Math.cos(angle) * r;
+    micPositions[i*3+1] = -0.2;
+    micPositions[i*3+2] = Math.sin(angle) * r;
+  }
+}
+
+if (webglContainer) {
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(60, webglContainer.clientWidth / webglContainer.clientHeight, 0.1, 1000);
+  renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+
+  renderer.setSize(webglContainer.clientWidth, webglContainer.clientHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
-  bubbleContainer.appendChild(renderer.domElement);
+  webglContainer.appendChild(renderer.domElement);
 
-  const geometry = new THREE.IcosahedronGeometry(2, 5); 
-  material = new THREE.MeshBasicMaterial({ 
+  // We use Points instead of a Mesh wireframe for a cleaner transition
+  const geometry = new THREE.BufferGeometry();
+  
+  // Set initial position to the Mic
+  geometry.setAttribute('position', new THREE.BufferAttribute(micPositions.slice(), 3));
+  
+  // Add morph targets
+  geometry.morphAttributes.position = [];
+  geometry.morphAttributes.position[0] = new THREE.BufferAttribute(spherePositions, 3);
+
+  material = new THREE.PointsMaterial({ 
     color: 0xe8924a,
-    wireframe: true,
+    size: 0.03,
     transparent: true,
-    opacity: 0.45 
+    opacity: 0.6
   });
   
-  sphere = new THREE.Mesh(geometry, material);
-  scene.add(sphere);
+  morphMesh = new THREE.Points(geometry, material);
+  scene.add(morphMesh);
   
   camera.position.z = 4.5;
-  camera.position.x = 0; 
-  
-  originalPositions = geometry.attributes.position.clone();
-  positionAttribute = geometry.attributes.position;
   
   let time = 0;
+  let isMorphed = false;
+  let morphProgress = 0;
 
-  function animateBubble() {
-    requestAnimationFrame(animateBubble);
-    time += 0.05;
+  function animate3D() {
+    requestAnimationFrame(animate3D);
+    time += 0.02;
 
-    sphere.rotation.y += 0.002;
-    sphere.rotation.x += 0.001;
+    // Organic Rotation
+    morphMesh.rotation.y = time * 0.5;
+    morphMesh.rotation.x = Math.sin(time * 0.2) * 0.2;
+    morphMesh.position.y = Math.sin(time * 0.8) * 0.1;
 
-    let autoPulse = Math.sin(time * 0.5) * 0.3; 
-
-    for (let i = 0; i < positionAttribute.count; i++) {
-      let ox = originalPositions.getX(i);
-      let oy = originalPositions.getY(i);
-      let oz = originalPositions.getZ(i);
-
-      let noise = Math.sin(ox * 2 + time) * Math.cos(oy * 2 + time) * Math.sin(oz * 2 + time);
-      let spike = 1 + ((autoPulse + noise) * (0.1 + burstIntensity));
-
-      positionAttribute.setXYZ(i, ox * spike, oy * spike, oz * spike);
+    // Handle the morph transition
+    if (isMorphed && morphProgress < 1) {
+      morphProgress += 0.02; // Speed of transforming into bubble
+    } else if (!isMorphed && morphProgress > 0) {
+      morphProgress -= 0.02; // Speed of transforming back to mic
     }
     
-    positionAttribute.needsUpdate = true;
+    // Clamp
+    morphProgress = Math.max(0, Math.min(1, morphProgress));
+
+    // Apply morph influence (0 = Mic, 1 = Sphere)
+    morphMesh.morphTargetInfluences = [morphProgress];
+
     renderer.render(scene, camera);
   }
 
-  animateBubble();
+  animate3D();
 
   window.addEventListener('resize', () => {
-    if(!bubbleContainer) return;
-    camera.aspect = bubbleContainer.clientWidth / bubbleContainer.clientHeight;
+    if(!webglContainer) return;
+    camera.aspect = webglContainer.clientWidth / webglContainer.clientHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(bubbleContainer.clientWidth, bubbleContainer.clientHeight);
+    renderer.setSize(webglContainer.clientWidth, webglContainer.clientHeight);
   });
 }
 
 /* ----------------------------------------------------
-   3. 2D BACKGROUND CANVAS & FAKE PLAY LOGIC
+   3. 2D BACKGROUND CANVAS
 ---------------------------------------------------- */
 const bgCanvas = document.getElementById('network-canvas');
 let speedMultiplier = 1; 
@@ -114,9 +180,6 @@ if (bgCanvas) {
       });
     }
   }
-
-  let mouse = { x: null, y: null };
-  window.addEventListener('mousemove', (e) => { mouse.x = e.x; mouse.y = e.y; });
 
   function animateCanvas() {
     requestAnimationFrame(animateCanvas);
@@ -146,13 +209,6 @@ if (bgCanvas) {
           ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
         }
       }
-      if (mouse.x != null) {
-        let dist = Math.hypot(p.x - mouse.x, p.y - mouse.y);
-        if (dist < 150) {
-          ctx.beginPath(); ctx.strokeStyle = `rgba(244, 241, 234, ${0.3 - dist/500})`;
-          ctx.moveTo(p.x, p.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
-        }
-      }
     }
   }
   window.addEventListener('resize', initCanvas);
@@ -160,41 +216,85 @@ if (bgCanvas) {
   animateCanvas();
 }
 
-// The Fake Play Burst Event Listener
-const fakePlayBtn = document.getElementById('fake-play-btn');
-const playText = document.getElementById('play-text');
+/* ----------------------------------------------------
+   4. UI LOGIC (Play Button -> Morph Trigger)
+---------------------------------------------------- */
+const masterPlayBtn = document.getElementById('master-play-btn');
+const iconPlay = document.getElementById('master-icon-play');
+const iconPause = document.getElementById('master-icon-pause');
+const scrubberFill = document.getElementById('scrubber-fill');
+const timeCurrent = document.getElementById('time-current');
 
-if (fakePlayBtn) {
-  fakePlayBtn.addEventListener('click', () => {
-    speedMultiplier = 15; 
-    burstIntensity = 0.8; 
+let isPlaying = false;
+let fakeTime = 0;
+let scrubberInterval;
+
+if (masterPlayBtn) {
+  masterPlayBtn.addEventListener('click', () => {
+    isPlaying = !isPlaying;
     
-    if (material) {
-      material.opacity = 0.8; 
-      material.color.setHex(0xffaa55); 
-    }
-    
-    playText.innerText = "System Active";
-    fakePlayBtn.style.boxShadow = "0 0 30px rgba(232, 146, 74, 0.8)";
-    fakePlayBtn.style.backgroundColor = "var(--bg-elevated)";
-    
-    let decayInterval = setInterval(() => {
-      speedMultiplier -= 0.5;
-      burstIntensity -= 0.03;
+    if (isPlaying) {
+      // 1. UI updates to Pause
+      iconPlay.style.display = 'none';
+      iconPause.style.display = 'block';
+      masterPlayBtn.style.borderColor = 'var(--accent)';
       
-      if(speedMultiplier <= 1) {
-        speedMultiplier = 1;
-        burstIntensity = 0;
-        if (material) {
-          material.opacity = 0.45;
-          material.color.setHex(0xe8924a); 
-        }
+      // 2. Trigger the 3D Morph (Microphone -> Bubble)
+      if (morphMesh) {
+        morphMesh.material.color.setHex(0xffaa55); // Flash bright
+        morphMesh.material.opacity = 0.9;
         
-        playText.innerText = "Initialize Node";
-        fakePlayBtn.style.boxShadow = "none";
-        fakePlayBtn.style.backgroundColor = "var(--ink-primary)";
-        clearInterval(decayInterval);
+        // This variable is checked in the animate3D loop to run the morph
+        // We set it globally since the loop is running independently
+        window.isMorphed = true; 
       }
-    }, 100);
+      
+      // 3. Ramp up background speed
+      speedMultiplier = 15;
+      
+      // Decay background speed back to normal slowly
+      let decayInterval = setInterval(() => {
+        speedMultiplier -= 0.5;
+        if(speedMultiplier <= 1) {
+          speedMultiplier = 1;
+          clearInterval(decayInterval);
+          if (morphMesh) {
+            morphMesh.material.color.setHex(0xe8924a); // Return to standard orange
+          }
+        }
+      }, 100);
+
+      // 4. Start the fake scrubber moving
+      clearInterval(scrubberInterval);
+      scrubberInterval = setInterval(() => {
+        fakeTime += 1;
+        
+        // Update Scrubber Width
+        const totalDuration = 42 * 60 + 15; // 42:15 in seconds
+        const percent = (fakeTime / totalDuration) * 100;
+        scrubberFill.style.width = `${percent}%`;
+        
+        // Update Time Text
+        const m = Math.floor(fakeTime / 60).toString().padStart(2, '0');
+        const s = (fakeTime % 60).toString().padStart(2, '0');
+        timeCurrent.innerText = `${m}:${s}`;
+        
+      }, 1000); // Ticks every second
+
+    } else {
+      // Pause clicked
+      iconPlay.style.display = 'block';
+      iconPause.style.display = 'none';
+      masterPlayBtn.style.borderColor = 'var(--ink-primary)';
+      
+      // Morph back (Bubble -> Microphone)
+      window.isMorphed = false; 
+      
+      if (morphMesh) {
+        morphMesh.material.opacity = 0.6;
+      }
+      
+      clearInterval(scrubberInterval);
+    }
   });
 }
