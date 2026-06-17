@@ -6,8 +6,17 @@
 <title>TELEMETRIX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;800&display=swap" rel="stylesheet" />
+
+<!-- 1. Anime.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<!-- 2. Typed.js (Terminal Typing) -->
+<script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+<!-- 3. Vanilla Tilt (3D Hover Parallax) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+<!-- 4. GSAP & ScrollTrigger (Scroll Animations) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 
 <style>
   :root {
@@ -30,9 +39,8 @@
     color: var(--ink-primary);
     background: var(--bg-base);
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    line-height: 1.5;
     overflow-x: hidden;
+    line-height: 1.5;
   }
 
   .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
@@ -52,9 +60,7 @@
     border-bottom: 1px solid transparent;
     transition: border-color 0.3s;
   }
-  .nav.scrolled {
-    border-bottom: 1px solid var(--rule);
-  }
+  .nav.scrolled { border-bottom: 1px solid var(--rule); }
   .nav__brand {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.875rem;
@@ -62,11 +68,7 @@
     font-weight: 500;
   }
   .nav__links { display: flex; gap: 2rem; font-size: 0.875rem; }
-  .nav__links a {
-    color: var(--ink-secondary);
-    text-decoration: none;
-    transition: color 150ms;
-  }
+  .nav__links a { color: var(--ink-secondary); text-decoration: none; transition: color 150ms; }
   .nav__links a:hover { color: var(--ink-primary); }
   .nav__cta {
     font-size: 0.875rem;
@@ -75,7 +77,7 @@
     border-radius: 999px;
     text-decoration: none;
     color: var(--ink-primary);
-    transition: border-color 150ms, background 150ms;
+    transition: all 150ms;
   }
   .nav__cta:hover { border-color: var(--accent); background: rgba(232, 146, 74, 0.08); }
 
@@ -88,396 +90,118 @@
     background: var(--bg-base);
   }
 
-  /* Interactive Canvas Background */
   #network-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    opacity: 0.6;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.6;
   }
 
-  .hero__ombre {
+  /* Massive Background Text for Anime.js Split Text */
+  .hero__bg-text {
     position: absolute;
-    inset: 0;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: 15vw;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(232, 146, 74, 0.15);
+    white-space: nowrap;
     z-index: 2;
-    background:
-      radial-gradient(ellipse 90% 70% at 80% 90%,
-        rgba(232, 146, 74, 0.35) 0%,
-        rgba(196, 106, 30, 0.20) 25%,
-        rgba(120, 50, 20, 0.15) 50%,
-        rgba(40, 18, 12, 0.05) 75%,
-        rgba(10, 10, 12, 0) 100%),
-      linear-gradient(180deg, rgba(10,10,12,0.4) 0%, #14100d 100%);
-  }
-
-  .hero__photo {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 55%;
-    height: 75%;
-    z-index: 3;
-    background-image: url('https://plus.unsplash.com/premium_photo-1664195074951-fe91ec456eed?w=1800&auto=format&fit=crop&q=80');
-    background-size: cover;
-    background-position: center;
-    -webkit-mask-image: radial-gradient(ellipse 80% 80% at 70% 60%, #000 30%, transparent 90%);
-            mask-image: radial-gradient(ellipse 80% 80% at 70% 60%, #000 30%, transparent 90%);
-    mix-blend-mode: lighten;
-    opacity: 0.65;
-  }
-
-  .hero__grain {
-    position: absolute;
-    inset: 0;
-    z-index: 4;
     pointer-events: none;
-    opacity: 0.3;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+    opacity: 1;
   }
-
-  .hero__container {
-    position: relative;
-    z-index: 5;
-    max-width: 1280px;
-    margin: 0 auto;
-    width: 100%;
-    min-height: 100vh;
-    padding: 6rem 2rem 4rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-  }
-
-  .hero__eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--ink-secondary);
-    margin-bottom: 2rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    opacity: 0; /* For AnimeJS */
-  }
-  .hero__eyebrow::before {
-    content: "";
-    width: 6px; height: 6px;
-    background: var(--accent);
-    border-radius: 50%;
-    box-shadow: 0 0 12px var(--accent);
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(232, 146, 74, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(232, 146, 74, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(232, 146, 74, 0); }
-  }
-
-  .hero__title {
-    font-size: clamp(2.5rem, 7vw, 6.25rem);
-    font-weight: 500;
-    line-height: 1.02;
-    letter-spacing: -0.025em;
-    max-width: 16ch;
-    margin-bottom: 2rem;
-    color: var(--ink-primary);
-  }
-  
-  /* Split text classes for animation */
-  .word { display: inline-block; overflow: hidden; vertical-align: bottom; }
-  .char { display: inline-block; transform: translateY(100%); opacity: 0; }
-
-  .hero__sub {
-    font-size: clamp(1.125rem, 1.4vw, 1.375rem);
-    font-weight: 400;
-    line-height: 1.45;
-    color: var(--ink-secondary);
-    max-width: 48ch;
-    margin-bottom: 3rem;
-    opacity: 0; /* For AnimeJS */
-    transform: translateY(20px);
-  }
-
-  .hero__actions { 
-    display: flex; gap: 1rem; flex-wrap: wrap; 
-    opacity: 0; /* For AnimeJS */
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.875rem 1.5rem;
-    border-radius: 999px;
-    font-size: 0.9375rem;
-    font-weight: 500;
-    text-decoration: none;
-    transition: transform 150ms, background 150ms, border-color 150ms, box-shadow 150ms;
-    position: relative;
-    overflow: hidden;
-  }
-  .btn--primary {
-    background: var(--ink-primary);
-    color: var(--bg-base);
-  }
-  .btn--primary:hover { 
-    transform: translateY(-2px); 
-    box-shadow: 0 10px 20px -10px rgba(244, 241, 234, 0.5);
-  }
-  .btn--ghost {
-    border: 1px solid var(--rule-strong);
-    color: var(--ink-primary);
-  }
-  .btn--ghost:hover { border-color: var(--ink-primary); }
-
-  .hero__meta {
-    position: absolute;
-    bottom: 2rem;
-    left: 2rem;
-    right: 2rem;
-    display: flex;
-    justify-content: space-between;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--ink-tertiary);
-    letter-spacing: 0.08em;
-    z-index: 5;
+  .hero__bg-text .char {
+    display: inline-block;
+    transform: translateY(100px);
     opacity: 0;
   }
 
-  /* ---------- Featured Video Embed ---------- */
+  .hero__ombre {
+    position: absolute; inset: 0; z-index: 3;
+    background: radial-gradient(ellipse 90% 70% at 80% 90%, rgba(232, 146, 74, 0.35) 0%, rgba(196, 106, 30, 0.20) 25%, rgba(10, 10, 12, 0) 100%), linear-gradient(180deg, rgba(10,10,12,0.4) 0%, #14100d 100%);
+  }
+
+  .hero__photo {
+    position: absolute; bottom: 0; right: 0; width: 55%; height: 75%; z-index: 4;
+    background-image: url('https://plus.unsplash.com/premium_photo-1664195074951-fe91ec456eed?w=1800&auto=format&fit=crop&q=80');
+    background-size: cover; background-position: center;
+    -webkit-mask-image: radial-gradient(ellipse 80% 80% at 70% 60%, #000 30%, transparent 90%);
+    mix-blend-mode: lighten; opacity: 0.65;
+  }
+
+  .hero__container {
+    position: relative; z-index: 5; max-width: 1280px; margin: 0 auto; width: 100%;
+    min-height: 100vh; padding: 6rem 2rem 4rem; display: flex; flex-direction: column; justify-content: flex-end;
+  }
+
+  .hero__eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 2rem;
+  }
+  /* Typed.js cursor styling */
+  .typed-cursor { color: var(--accent); font-size: 1rem; }
+
+  .hero__title {
+    font-size: clamp(2.5rem, 7vw, 6.25rem); font-weight: 500; line-height: 1.02; letter-spacing: -0.025em; max-width: 16ch; margin-bottom: 2rem; color: var(--ink-primary);
+  }
+
+  .hero__sub {
+    font-size: clamp(1.125rem, 1.4vw, 1.375rem); font-weight: 400; line-height: 1.45; color: var(--ink-secondary); max-width: 48ch; margin-bottom: 3rem;
+  }
+
+  .hero__actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.5rem; border-radius: 999px; font-size: 0.9375rem; font-weight: 500; text-decoration: none; transition: all 150ms;
+  }
+  .btn--primary { background: var(--ink-primary); color: var(--bg-base); }
+  .btn--primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -10px rgba(244, 241, 234, 0.5); }
+  .btn--ghost { border: 1px solid var(--rule-strong); color: var(--ink-primary); }
+  .btn--ghost:hover { border-color: var(--ink-primary); }
+
+  /* ---------- Featured Video (Vanilla Tilt) ---------- */
   .featured-video {
-    background: var(--bg-elevated);
-    padding: 6rem 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border-top: 1px solid var(--rule);
-  }
-  .featured-video__eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 2rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-  .featured-video__eyebrow::before {
-    content: "▶";
-    font-size: 0.6rem;
+    background: var(--bg-elevated); padding: 8rem 2rem; display: flex; flex-direction: column; align-items: center; border-top: 1px solid var(--rule);
   }
   .featured-video__wrapper {
-    position: relative;
-    width: 100%;
-    max-width: 1024px;
-    aspect-ratio: 16 / 9;
-    background: #000;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--rule-strong);
-    transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
-  }
-  .featured-video__wrapper:hover {
-    transform: scale(1.02);
-    box-shadow: 0 30px 60px -12px rgba(232, 146, 74, 0.15), 0 0 0 1px var(--rule-strong);
+    position: relative; width: 100%; max-width: 1024px; aspect-ratio: 16 / 9; background: #000; border-radius: 12px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--rule-strong);
+    transform-style: preserve-3d; /* Required for tilt inner pop */
   }
   .featured-video__wrapper iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: none;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; border-radius: 12px;
+    transform: translateZ(30px); /* Makes video pop off the background during tilt */
   }
 
   /* ---------- Marquee ---------- */
   .marquee {
-    background: var(--bg-base);
-    border-top: 1px solid var(--rule);
-    border-bottom: 1px solid var(--rule);
-    padding: 1.5rem 0;
-    overflow: hidden;
-    white-space: nowrap;
+    background: var(--bg-base); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 1.5rem 0; overflow: hidden; white-space: nowrap;
   }
   .marquee__track {
-    display: inline-flex;
-    gap: 4rem;
-    animation: scroll 40s linear infinite;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8125rem;
-    letter-spacing: 0.12em;
-    color: var(--ink-tertiary);
+    display: inline-flex; gap: 4rem; animation: scroll 40s linear infinite; font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; letter-spacing: 0.12em; color: var(--ink-tertiary);
   }
-  .marquee__track span::before {
-    content: "◆ ";
-    color: var(--accent);
-    margin-right: 0.75rem;
-  }
-  @keyframes scroll {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
+  @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-  /* ---------- Sections ---------- */
-  .section {
-    background: var(--bg-base);
-    color: var(--ink-primary);
-    padding: 8rem 2rem;
-    position: relative;
-  }
-  .section--elevated {
-    background: var(--bg-elevated);
-  }
+  /* ---------- Sections (GSAP Animated) ---------- */
+  .section { background: var(--bg-base); color: var(--ink-primary); padding: 8rem 2rem; position: relative; }
+  .section--elevated { background: var(--bg-elevated); }
   .section__container { max-width: 1280px; margin: 0 auto; }
-  .section__eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--ink-tertiary);
-    margin-bottom: 2rem;
-  }
-  .section__title {
-    font-size: clamp(2rem, 5vw, 4rem);
-    font-weight: 500;
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-    max-width: 22ch;
-    margin-bottom: 2rem;
-  }
-  .section__lead {
-    font-size: clamp(1.125rem, 1.4vw, 1.375rem);
-    line-height: 1.55;
-    color: var(--ink-secondary);
-    max-width: 60ch;
-  }
+  .section__eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-tertiary); margin-bottom: 2rem; }
+  .section__title { font-size: clamp(2rem, 5vw, 4rem); font-weight: 500; line-height: 1.05; letter-spacing: -0.02em; max-width: 22ch; margin-bottom: 2rem; }
+  .section__lead { font-size: clamp(1.125rem, 1.4vw, 1.375rem); line-height: 1.55; color: var(--ink-secondary); max-width: 60ch; }
 
-  /* Coverage areas */
-  .coverage {
-    margin-top: 5rem;
-    border-top: 1px solid var(--rule);
-  }
+  .coverage { margin-top: 5rem; border-top: 1px solid var(--rule); }
   .coverage__row {
-    display: grid;
-    grid-template-columns: 80px 1fr 2fr;
-    gap: 2rem;
-    padding: 1.75rem 0;
-    border-bottom: 1px solid var(--rule);
-    align-items: baseline;
-    transition: padding 300ms cubic-bezier(0.165, 0.84, 0.44, 1), background 300ms;
-    cursor: crosshair;
+    display: grid; grid-template-columns: 80px 1fr 2fr; gap: 2rem; padding: 1.75rem 0; border-bottom: 1px solid var(--rule); align-items: baseline; transition: padding 300ms, background 300ms; cursor: crosshair;
   }
-  .coverage__row:hover {
-    padding-left: 1.5rem;
-    background: linear-gradient(90deg, rgba(232, 146, 74, 0.08) 0%, transparent 100%);
-    border-bottom: 1px solid var(--accent);
-  }
-  .coverage__row:hover .coverage__num {
-    color: var(--accent);
-  }
-  .coverage__num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--ink-tertiary);
-    letter-spacing: 0.1em;
-    transition: color 0.3s;
-  }
-  .coverage__name {
-    font-size: 1.25rem;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    color: var(--ink-primary);
-  }
-  .coverage__desc {
-    font-size: 0.9375rem;
-    color: var(--ink-secondary);
-    line-height: 1.5;
-  }
-
-  /* Quote */
-  .quote {
-    background:
-      radial-gradient(ellipse 60% 80% at 90% 50%,
-        rgba(232, 146, 74, 0.10) 0%,
-        rgba(10, 10, 12, 0) 70%),
-      var(--bg-base);
-    color: var(--ink-primary);
-    padding: 8rem 2rem;
-  }
-  .quote__container { max-width: 1100px; margin: 0 auto; }
-  .quote__text {
-    font-size: clamp(1.5rem, 3vw, 2.5rem);
-    font-weight: 400;
-    line-height: 1.3;
-    letter-spacing: -0.015em;
-    margin-bottom: 2rem;
-  }
-  .quote__attr {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8125rem;
-    letter-spacing: 0.1em;
-    color: var(--ink-tertiary);
-  }
+  .coverage__row:hover { padding-left: 1.5rem; background: linear-gradient(90deg, rgba(232, 146, 74, 0.08) 0%, transparent 100%); border-bottom: 1px solid var(--accent); }
+  .coverage__num { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--ink-tertiary); letter-spacing: 0.1em; }
+  .coverage__name { font-size: 1.25rem; font-weight: 500; color: var(--ink-primary); }
+  .coverage__desc { font-size: 0.9375rem; color: var(--ink-secondary); }
 
   /* Footer */
-  footer {
-    background: var(--bg-base);
-    color: var(--ink-tertiary);
-    padding: 4rem 2rem 2rem;
-    border-top: 1px solid var(--rule);
-  }
-  .footer__container {
-    max-width: 1280px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-  .footer__brand {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1.5rem;
-    letter-spacing: 0.15em;
-    color: var(--ink-primary);
-  }
-  .footer__meta {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-  }
-
-  @media (max-width: 720px) {
-    .nav { padding: 1rem 1.25rem; }
-    .nav__links { display: none; }
-    .hero__container { padding: 5rem 1.25rem 6rem; }
-    .hero__meta { display: none; }
-    .hero__photo { width: 100%; height: 50%; opacity: 0.45; }
-    .hero__ombre {
-      background:
-        radial-gradient(ellipse 100% 60% at 50% 90%,
-          rgba(232, 146, 74, 0.45) 0%,
-          rgba(120, 50, 20, 0.25) 40%,
-          rgba(10, 10, 12, 0) 80%),
-        linear-gradient(180deg, #0a0a0c 0%, #14100d 100%);
-    }
-    .featured-video { padding: 4rem 1.25rem; }
-    .section, .quote { padding: 5rem 1.25rem; }
-    .coverage__row {
-      grid-template-columns: 60px 1fr;
-      grid-template-rows: auto auto;
-    }
-    .coverage__desc { grid-column: 2; }
-  }
+  footer { background: var(--bg-base); color: var(--ink-tertiary); padding: 4rem 2rem 2rem; border-top: 1px solid var(--rule); }
+  .footer__container { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; }
+  .footer__brand { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; letter-spacing: 0.15em; color: var(--ink-primary); }
 </style>
 </head>
 <body>
@@ -487,7 +211,6 @@
   <div class="nav__links">
     <a href="#about">About</a>
     <a href="#coverage">Coverage</a>
-    <a href="#book">Book</a>
   </div>
   <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="nav__cta">Record with us</a>
 </nav>
@@ -495,190 +218,118 @@
 <section class="hero">
   <canvas id="network-canvas"></canvas>
   
+  <!-- Massive Background Text for Anime.js Split Text -->
+  <div class="hero__bg-text" id="split-text">TELEMETRIX</div>
+  
   <div class="hero__ombre"></div>
   <div class="hero__photo"></div>
   <div class="hero__grain"></div>
 
-  <div class="hero__container">
-    <div class="hero__eyebrow mono el-eyebrow">First transmission &middot; Q2 2026</div>
-    
-    <h1 class="hero__title" id="hero-title">
-      Deep conversations with the builders of a resilient future.
-    </h1>
-    
-    <p class="hero__sub el-sub">A podcast covering the AI infrastructure, autonomous systems, energy, defense, and supply chain technologies that will define the next decade.</p>
-    
-    <div class="hero__actions el-actions">
+  <div class="hero__container gs-hero">
+    <!-- Typed.js Terminal Output -->
+    <div class="hero__eyebrow"><span id="typed-output"></span></div>
+    <h1 class="hero__title">Deep conversations with the builders of a resilient future.</h1>
+    <p class="hero__sub">A podcast covering the AI infrastructure, autonomous systems, energy, defense, and supply chain technologies that will define the next decade.</p>
+    <div class="hero__actions">
       <a href="#latest-episode" class="btn btn--primary">Watch Ep. 001 &rarr;</a>
       <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="btn btn--ghost">Record with us</a>
     </div>
   </div>
-
-  <div class="hero__meta el-meta">
-    <span>TX-001 / GAINESVILLE</span>
-    <span>EST. 2026</span>
-  </div>
 </section>
 
 <section class="featured-video" id="latest-episode">
-  <div class="featured-video__eyebrow">Premiere Episode</div>
-  <div class="featured-video__wrapper">
-    <iframe 
-      src="https://www.youtube.com/embed/mLxVav4UceA" 
-      title="Telemetrix Studio - Premiere Episode" 
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-      allowfullscreen>
-    </iframe>
+  <div class="section__eyebrow" style="color:var(--accent);">▶ PREMIERE EPISODE</div>
+  <!-- Vanilla Tilt applied via data attributes -->
+  <div class="featured-video__wrapper" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-perspective="1000" data-tilt-glare="true" data-tilt-max-glare="0.2">
+    <iframe src="https://www.youtube.com/embed/mLxVav4UceA" title="Telemetrix Studio - Premiere Episode" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
   </div>
 </section>
 
-<div class="marquee">
-  <div class="marquee__track">
-    <span>AI INFRASTRUCTURE</span>
-    <span>AUTONOMOUS SYSTEMS</span>
-    <span>ENERGY INDEPENDENCE</span>
-    <span>SUPPLY CHAIN RESILIENCE</span>
-    <span>DEFENSE TECHNOLOGY</span>
-    <span>CRITICAL INFRASTRUCTURE</span>
-    <span>AI INFRASTRUCTURE</span>
-    <span>AUTONOMOUS SYSTEMS</span>
-    <span>ENERGY INDEPENDENCE</span>
-    <span>SUPPLY CHAIN RESILIENCE</span>
-    <span>DEFENSE TECHNOLOGY</span>
-    <span>CRITICAL INFRASTRUCTURE</span>
-  </div>
-</div>
-
-<section class="section" id="about">
-  <div class="section__container scroll-anim">
-    <div class="section__eyebrow">01 / About</div>
-    <h2 class="section__title">The companies building our resilient future don't get enough airtime.</h2>
-    <p class="section__lead">While everyone talks about consumer AI, the real action is in infrastructure &mdash; the systems that will determine which countries, companies, and communities thrive in an increasingly uncertain world. Telemetrix is where these builders tell their stories.</p>
-  </div>
-</section>
+<div class="marquee"><div class="marquee__track">
+  <span>AI INFRASTRUCTURE</span><span>AUTONOMOUS SYSTEMS</span><span>DEFENSE TECHNOLOGY</span><span>CRITICAL INFRASTRUCTURE</span>
+  <span>AI INFRASTRUCTURE</span><span>AUTONOMOUS SYSTEMS</span><span>DEFENSE TECHNOLOGY</span><span>CRITICAL INFRASTRUCTURE</span>
+</div></div>
 
 <section class="section section--elevated" id="coverage">
-  <div class="section__container scroll-anim">
-    <div class="section__eyebrow">02 / Coverage areas</div>
-    <h2 class="section__title">Six domains. One thesis: physical systems are the next frontier.</h2>
+  <div class="section__container">
+    <div class="section__eyebrow gs-fade">02 / Coverage areas</div>
+    <h2 class="section__title gs-fade">Six domains. One thesis: physical systems are the next frontier.</h2>
 
     <div class="coverage">
-      <div class="coverage__row cover-item">
-        <div class="coverage__num">001</div>
-        <div class="coverage__name">AI Infrastructure</div>
-        <div class="coverage__desc">The compute, networking, and systems architecture enabling artificial intelligence at scale.</div>
+      <div class="coverage__row gs-row">
+        <div class="coverage__num">001</div><div class="coverage__name">AI Infrastructure</div><div class="coverage__desc">Compute, networking, and systems architecture enabling AI at scale.</div>
       </div>
-      <div class="coverage__row cover-item">
-        <div class="coverage__num">002</div>
-        <div class="coverage__name">Autonomous Systems</div>
-        <div class="coverage__desc">Self-driving vehicles, robotics, drones, and the sensing &amp; control systems that let machines operate independently.</div>
+      <div class="coverage__row gs-row">
+        <div class="coverage__num">002</div><div class="coverage__name">Autonomous Systems</div><div class="coverage__desc">Self-driving vehicles, robotics, drones, and sensing control systems.</div>
       </div>
-      <div class="coverage__row cover-item">
-        <div class="coverage__num">003</div>
-        <div class="coverage__name">Energy Independence</div>
-        <div class="coverage__desc">Clean energy generation, storage, grid intelligence, and the technologies reshaping how we produce power.</div>
+      <div class="coverage__row gs-row">
+        <div class="coverage__num">003</div><div class="coverage__name">Energy Independence</div><div class="coverage__desc">Clean energy generation, storage, and grid intelligence.</div>
       </div>
-      <div class="coverage__row cover-item">
-        <div class="coverage__num">004</div>
-        <div class="coverage__name">Supply Chain Resilience</div>
-        <div class="coverage__desc">Logistics, manufacturing automation, inventory intelligence, and the systems making global trade more robust.</div>
-      </div>
-      <div class="coverage__row cover-item">
-        <div class="coverage__num">005</div>
-        <div class="coverage__name">Defense Technology</div>
-        <div class="coverage__desc">Military innovation, cybersecurity, dual-use technologies, and the companies building national security capabilities.</div>
-      </div>
-      <div class="coverage__row cover-item">
-        <div class="coverage__num">006</div>
-        <div class="coverage__name">Critical Infrastructure</div>
-        <div class="coverage__desc">Communication networks, industrial control systems, and the foundational technologies of modern society.</div>
+      <div class="coverage__row gs-row">
+        <div class="coverage__num">004</div><div class="coverage__name">Defense Technology</div><div class="coverage__desc">Military innovation, cybersecurity, and national security capabilities.</div>
       </div>
     </div>
-  </div>
-</section>
-
-<section class="quote">
-  <div class="quote__container scroll-anim">
-    <p class="quote__text">Every conversation is designed to extract insights you won't hear elsewhere &mdash; the technical details, market dynamics, and strategic thinking behind the most important technologies being built today.</p>
-    <div class="quote__attr">&mdash; Ben Gruen, host</div>
-  </div>
-</section>
-
-<section class="section section--elevated" id="book">
-  <div class="section__container scroll-anim">
-    <div class="section__eyebrow">03 / Record with us</div>
-    <h2 class="section__title">Building something that fits the thesis? Let's talk.</h2>
-    <p class="section__lead" style="margin-bottom: 3rem;">Founders, operators, and investors working on AI infrastructure, autonomous systems, energy, defense, and supply chains.</p>
-    <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="btn btn--primary">Book a recording &rarr;</a>
   </div>
 </section>
 
 <footer>
   <div class="footer__container">
     <div class="footer__brand">TELEMETRIX</div>
-    <div class="footer__meta">
-      <div>&copy; 2026 &middot; All transmissions reserved</div>
-    </div>
+    <div class="footer__meta">&copy; 2026 &middot; All transmissions reserved</div>
   </div>
 </footer>
 
 <script>
-  // 1. Split text into characters for Anime.js
-  const textWrapper = document.querySelector('#hero-title');
-  textWrapper.innerHTML = textWrapper.textContent.replace(/\S/g, "<span class='word'><span class='char'>$&</span></span>");
+  /* 1. Anime.js - Split Text Effect on Background Title */
+  const splitTextEl = document.querySelector('#split-text');
+  splitTextEl.innerHTML = splitTextEl.textContent.replace(/\S/g, "<span class='char'>$&</span>");
+  
+  anime.timeline({loop: false})
+    .add({
+      targets: '#split-text .char',
+      translateY: [100, 0],
+      translateZ: 0,
+      opacity: [0, 1],
+      easing: "easeOutExpo",
+      duration: 1400,
+      delay: (el, i) => 300 + 100 * i
+    });
 
-  // 2. Anime.js Timeline for Hero Section (Boot Sequence)
-  const heroTimeline = anime.timeline({ loop: false });
-
-  heroTimeline
-    .add({
-      targets: '.el-eyebrow',
-      opacity: [0, 1],
-      translateY: [10, 0],
-      easing: "easeOutExpo",
-      duration: 1000,
-      delay: 200
-    })
-    .add({
-      targets: '.char',
-      translateY: ["100%", "0%"],
-      opacity: [0, 1],
-      easing: "easeOutExpo",
-      duration: 1200,
-      delay: (el, i) => 20 * i
-    }, "-=600")
-    .add({
-      targets: '.el-sub',
-      opacity: [0, 1],
-      translateY: [20, 0],
-      easing: "easeOutExpo",
-      duration: 1000
-    }, "-=800")
-    .add({
-      targets: '.el-actions',
-      opacity: [0, 1],
-      translateY: [20, 0],
-      easing: "easeOutExpo",
-      duration: 1000
-    }, "-=800")
-    .add({
-      targets: '.el-meta',
-      opacity: [0, 1],
-      easing: "linear",
-      duration: 1000
-    }, "-=500");
-
-  // 3. Scroll Interactions for Navbar and Sections
-  window.addEventListener('scroll', () => {
-    const nav = document.getElementById('navbar');
-    if (window.scrollY > 50) {
-      nav.classList.add('scrolled');
-    } else {
-      nav.classList.remove('scrolled');
-    }
+  /* 2. Typed.js - Terminal Eyebrow */
+  new Typed('#typed-output', {
+    strings: ['Initiating secure connection...', 'Decrypting signal...', 'First transmission > Q2 2026'],
+    typeSpeed: 40,
+    backSpeed: 20,
+    startDelay: 1000,
+    showCursor: true,
+    onComplete: function(self) { setTimeout(() => { self.cursor.remove(); }, 2000); }
   });
 
-  // 4. Interactive Node Network Canvas (Defense Tech Radar Vibe)
+  /* 3. GSAP ScrollTrigger - Animating the Coverage Rows */
+  gsap.registerPlugin(ScrollTrigger);
+  
+  // Animate the hero content sliding up gently
+  gsap.from(".gs-hero", { y: 50, opacity: 0, duration: 1.5, ease: "power3.out", delay: 0.5 });
+
+  // Stagger the coverage rows as you scroll down
+  gsap.from(".gs-row", {
+    scrollTrigger: {
+      trigger: ".coverage",
+      start: "top 80%",
+    },
+    y: 40,
+    opacity: 0,
+    duration: 0.8,
+    stagger: 0.15,
+    ease: "power2.out"
+  });
+
+  /* Navbar Scrolled State */
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+  });
+
+  /* 4. Custom Canvas Node Network */
   const canvas = document.getElementById('network-canvas');
   const ctx = canvas.getContext('2d');
   let width, height, particles;
@@ -687,83 +338,50 @@
     width = canvas.width = window.innerWidth;
     height = canvas.height = window.innerHeight;
     particles = [];
-    
-    // Create particles
-    const particleCount = window.innerWidth < 768 ? 40 : 100;
-    for(let i = 0; i < particleCount; i++) {
+    for(let i = 0; i < (window.innerWidth < 768 ? 40 : 80); i++) {
       particles.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
+        x: Math.random() * width, y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5,
         radius: Math.random() * 1.5 + 0.5
       });
     }
   }
 
   let mouse = { x: null, y: null };
-  window.addEventListener('mousemove', (e) => {
-    mouse.x = e.x;
-    mouse.y = e.y;
-  });
+  window.addEventListener('mousemove', (e) => { mouse.x = e.x; mouse.y = e.y; });
 
   function animateCanvas() {
     requestAnimationFrame(animateCanvas);
     ctx.clearRect(0, 0, width, height);
-    
     ctx.fillStyle = 'rgba(232, 146, 74, 0.8)';
-    ctx.lineWidth = 0.5;
-
+    
     for(let i = 0; i < particles.length; i++) {
       let p = particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-
-      // Bounce off walls
+      p.x += p.vx; p.y += p.vy;
       if(p.x < 0 || p.x > width) p.vx *= -1;
       if(p.y < 0 || p.y > height) p.vy *= -1;
 
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill();
 
-      // Connect particles
       for(let j = i + 1; j < particles.length; j++) {
         let p2 = particles[j];
-        let dx = p.x - p2.x;
-        let dy = p.y - p2.y;
-        let dist = Math.sqrt(dx*dx + dy*dy);
-
+        let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
         if(dist < 120) {
-          ctx.beginPath();
-          ctx.strokeStyle = `rgba(232, 146, 74, ${0.2 - dist/600})`;
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(p2.x, p2.y);
-          ctx.stroke();
+          ctx.beginPath(); ctx.strokeStyle = `rgba(232, 146, 74, ${0.2 - dist/600})`;
+          ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
         }
       }
-
-      // Mouse interaction (repel slightly)
       if (mouse.x != null) {
-        let dx = p.x - mouse.x;
-        let dy = p.y - mouse.y;
-        let dist = Math.sqrt(dx*dx + dy*dy);
+        let dist = Math.hypot(p.x - mouse.x, p.y - mouse.y);
         if (dist < 150) {
-          ctx.beginPath();
-          ctx.strokeStyle = `rgba(244, 241, 234, ${0.3 - dist/500})`;
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(mouse.x, mouse.y);
-          ctx.stroke();
+          ctx.beginPath(); ctx.strokeStyle = `rgba(244, 241, 234, ${0.3 - dist/500})`;
+          ctx.moveTo(p.x, p.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
         }
       }
     }
   }
-
   window.addEventListener('resize', initCanvas);
-  initCanvas();
-  animateCanvas();
-
+  initCanvas(); animateCanvas();
 </script>
-
 </body>
 </html>
