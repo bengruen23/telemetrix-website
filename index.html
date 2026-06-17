@@ -6,17 +6,7 @@
 <title>TELEMETRIX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;800&display=swap" rel="stylesheet" />
-
-<!-- 1. Anime.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-<!-- 2. Typed.js (Terminal Typing) -->
-<script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
-<!-- 3. Vanilla Tilt (3D Hover Parallax) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
-<!-- 4. GSAP & ScrollTrigger (Scroll Animations) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;800&display=swap" rel="stylesheet" />
 
 <style>
   :root {
@@ -24,319 +14,378 @@
     --bg-elevated:    #15161a;
     --ink-primary:    #f4f1ea;
     --ink-secondary:  rgba(244, 241, 234, 0.65);
-    --ink-tertiary:   rgba(244, 241, 234, 0.40);
-    --rule:           rgba(244, 241, 234, 0.10);
     --rule-strong:    rgba(244, 241, 234, 0.20);
     --accent:         #e8924a;
-    --accent-deep:    #c46a1e;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-
+  
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     color: var(--ink-primary);
     background: var(--bg-base);
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
-    line-height: 1.5;
+    overflow: hidden; /* Prevent scrolling, we want a full-screen app feel */
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
-
-  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 
   /* ---------- Nav ---------- */
   .nav {
-    position: fixed; top: 0; left: 0; right: 0; padding: 1.25rem 2rem; display: flex; justify-content: space-between; align-items: center; z-index: 100; color: var(--ink-primary); background: rgba(10, 10, 12, 0.7); backdrop-filter: blur(12px); border-bottom: 1px solid transparent; transition: border-color 0.3s;
-  }
-  .nav.scrolled { border-bottom: 1px solid var(--rule); }
-  .nav__brand { font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; letter-spacing: 0.18em; font-weight: 500; }
-  .nav__links { display: flex; gap: 2rem; font-size: 0.875rem; }
-  .nav__links a { color: var(--ink-secondary); text-decoration: none; transition: color 150ms; }
-  .nav__links a:hover { color: var(--ink-primary); }
-  .nav__cta { font-size: 0.875rem; border: 1px solid var(--rule-strong); padding: 0.5rem 1rem; border-radius: 999px; text-decoration: none; color: var(--ink-primary); transition: all 150ms; }
-  .nav__cta:hover { border-color: var(--accent); background: rgba(232, 146, 74, 0.08); }
-
-  /* ---------- HERO ---------- */
-  .hero { position: relative; min-height: 100vh; width: 100%; overflow: hidden; background: var(--bg-base); }
-
-  #network-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.6; }
-
-  /* SVG Line Drawing Container (Top Black Space) */
-  .hero__top-svg {
     position: absolute;
-    top: 12%; /* Positions it perfectly in the empty black space */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 1000px;
-    z-index: 5;
+    top: 0; left: 0; right: 0;
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+  }
+  .nav__brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    letter-spacing: 0.18em;
+    font-weight: 500;
+  }
+  .nav__cta {
+    font-size: 0.875rem;
+    border: 1px solid var(--rule-strong);
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    text-decoration: none;
+    color: var(--ink-primary);
+    transition: border-color 150ms;
+  }
+  .nav__cta:hover { border-color: var(--accent); }
+
+  /* ---------- The Audio Visualizer Container ---------- */
+  .visualizer-container {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* The Native Canvas */
+  #visualizer-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  /* Dark Vignette Overlay */
+  .vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: radial-gradient(circle at center, transparent 30%, var(--bg-base) 100%);
     pointer-events: none;
   }
-  .draw-text {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 110px;
-    font-weight: 800;
-    letter-spacing: 0.25em;
-    fill: transparent;
-    stroke: var(--accent);
-    stroke-width: 1.5px;
-    opacity: 0.6;
+
+  /* ---------- The Player UI ---------- */
+  .player-ui {
+    position: absolute;
+    bottom: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 600px;
+    padding: 0 2rem;
   }
 
-  /* Massive Background Text */
-  .hero__bg-text { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 15vw; color: transparent; -webkit-text-stroke: 1px rgba(232, 146, 74, 0.15); white-space: nowrap; z-index: 2; pointer-events: none; }
-  .hero__bg-text .char { display: inline-block; transform: translateY(100px); opacity: 0; }
+  .episode-meta {
+    text-align: center;
+  }
+  .episode-tag {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.5rem;
+  }
+  .episode-title {
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink-primary);
+  }
 
-  .hero__ombre { position: absolute; inset: 0; z-index: 3; background: radial-gradient(ellipse 90% 70% at 80% 90%, rgba(232, 146, 74, 0.35) 0%, rgba(196, 106, 30, 0.20) 25%, rgba(10, 10, 12, 0) 100%), linear-gradient(180deg, rgba(10,10,12,0.4) 0%, #14100d 100%); }
+  /* Custom Progress Bar */
+  .progress-container {
+    width: 100%;
+    height: 4px;
+    background: var(--rule-strong);
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.1s linear;
+  }
 
-  .hero__photo { position: absolute; bottom: 0; right: 0; width: 55%; height: 75%; z-index: 4; background-image: url('https://plus.unsplash.com/premium_photo-1664195074951-fe91ec456eed?w=1800&auto=format&fit=crop&q=80'); background-size: cover; background-position: center; -webkit-mask-image: radial-gradient(ellipse 80% 80% at 70% 60%, #000 30%, transparent 90%); mix-blend-mode: lighten; opacity: 0.65; }
+  /* Minimalist Controls */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+  .play-btn {
+    background: transparent;
+    border: 1px solid var(--ink-secondary);
+    border-radius: 50%;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .play-btn:hover {
+    border-color: var(--accent);
+    transform: scale(1.05);
+  }
+  
+  /* Pure CSS Play/Pause Icons */
+  .icon-play {
+    width: 0; 
+    height: 0; 
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-left: 16px solid var(--ink-primary);
+    margin-left: 6px;
+    transition: border-color 0.2s;
+  }
+  .icon-pause {
+    width: 16px;
+    height: 20px;
+    border-left: 5px solid var(--ink-primary);
+    border-right: 5px solid var(--ink-primary);
+    transition: border-color 0.2s;
+  }
+  .play-btn:hover .icon-play { border-left-color: var(--accent); }
+  .play-btn:hover .icon-pause { border-left-color: var(--accent); border-right-color: var(--accent); }
 
-  .hero__container { position: relative; z-index: 6; max-width: 1280px; margin: 0 auto; width: 100%; min-height: 100vh; padding: 6rem 2rem 4rem; display: flex; flex-direction: column; justify-content: flex-end; }
-
-  .hero__eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 2rem; }
-  .typed-cursor { color: var(--accent); font-size: 1rem; }
-
-  .hero__title { font-size: clamp(2.5rem, 7vw, 6.25rem); font-weight: 500; line-height: 1.02; letter-spacing: -0.025em; max-width: 16ch; margin-bottom: 2rem; color: var(--ink-primary); }
-  .hero__sub { font-size: clamp(1.125rem, 1.4vw, 1.375rem); font-weight: 400; line-height: 1.45; color: var(--ink-secondary); max-width: 48ch; margin-bottom: 3rem; }
-  .hero__actions { display: flex; gap: 1rem; flex-wrap: wrap; }
-
-  .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.5rem; border-radius: 999px; font-size: 0.9375rem; font-weight: 500; text-decoration: none; transition: all 150ms; }
-  .btn--primary { background: var(--ink-primary); color: var(--bg-base); }
-  .btn--primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -10px rgba(244, 241, 234, 0.5); }
-  .btn--ghost { border: 1px solid var(--rule-strong); color: var(--ink-primary); }
-  .btn--ghost:hover { border-color: var(--ink-primary); }
-
-  /* ---------- Featured Video ---------- */
-  .featured-video { background: var(--bg-elevated); padding: 8rem 2rem; display: flex; flex-direction: column; align-items: center; border-top: 1px solid var(--rule); }
-  .featured-video__wrapper { position: relative; width: 100%; max-width: 1024px; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--rule-strong); transform-style: preserve-3d; }
-  .featured-video__wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; border-radius: 12px; transform: translateZ(30px); }
-
-  /* ---------- Marquee ---------- */
-  .marquee { background: var(--bg-base); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 1.5rem 0; overflow: hidden; white-space: nowrap; }
-  .marquee__track { display: inline-flex; gap: 4rem; animation: scroll 40s linear infinite; font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; letter-spacing: 0.12em; color: var(--ink-tertiary); }
-  @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-
-  /* ---------- Sections ---------- */
-  .section { background: var(--bg-base); color: var(--ink-primary); padding: 8rem 2rem; position: relative; }
-  .section--elevated { background: var(--bg-elevated); }
-  .section__container { max-width: 1280px; margin: 0 auto; }
-  .section__eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-tertiary); margin-bottom: 2rem; }
-  .section__title { font-size: clamp(2rem, 5vw, 4rem); font-weight: 500; line-height: 1.05; letter-spacing: -0.02em; max-width: 22ch; margin-bottom: 2rem; }
-  .section__lead { font-size: clamp(1.125rem, 1.4vw, 1.375rem); line-height: 1.55; color: var(--ink-secondary); max-width: 60ch; }
-
-  .coverage { margin-top: 5rem; border-top: 1px solid var(--rule); }
-  .coverage__row { display: grid; grid-template-columns: 80px 1fr 2fr; gap: 2rem; padding: 1.75rem 0; border-bottom: 1px solid var(--rule); align-items: baseline; transition: padding 300ms, background 300ms; cursor: crosshair; }
-  .coverage__row:hover { padding-left: 1.5rem; background: linear-gradient(90deg, rgba(232, 146, 74, 0.08) 0%, transparent 100%); border-bottom: 1px solid var(--accent); }
-  .coverage__num { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--ink-tertiary); letter-spacing: 0.1em; }
-  .coverage__name { font-size: 1.25rem; font-weight: 500; color: var(--ink-primary); }
-  .coverage__desc { font-size: 0.9375rem; color: var(--ink-secondary); }
-
-  /* Footer */
-  footer { background: var(--bg-base); color: var(--ink-tertiary); padding: 4rem 2rem 2rem; border-top: 1px solid var(--rule); }
-  .footer__container { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; }
-  .footer__brand { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; letter-spacing: 0.15em; color: var(--ink-primary); }
-
-  @media (max-width: 768px) {
-    .draw-text { font-size: 60px; }
+  /* Time Display */
+  .time-display {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--ink-secondary);
+    margin-top: -1rem;
   }
 </style>
 </head>
 <body>
 
-<nav class="nav" id="navbar">
+<nav class="nav">
   <div class="nav__brand">TELEMETRIX</div>
-  <div class="nav__links">
-    <a href="#about">About</a>
-    <a href="#coverage">Coverage</a>
-  </div>
-  <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="nav__cta">Record with us</a>
+  <a href="#" class="nav__cta">Record with us</a>
 </nav>
 
-<section class="hero">
-  <canvas id="network-canvas"></canvas>
+<div class="visualizer-container">
+  <canvas id="visualizer-canvas"></canvas>
+  <div class="vignette"></div>
 
-  <!-- NEW: SVG Line Drawing Element -->
-  <div class="hero__top-svg">
-    <svg viewBox="0 0 1000 150" xmlns="http://www.w3.org/2000/svg">
-      <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" class="draw-text">
-        TELEMETRIX
-      </text>
-    </svg>
-  </div>
-  
-  <!-- Massive Background Text -->
-  <div class="hero__bg-text" id="split-text">TELEMETRIX</div>
-  
-  <div class="hero__ombre"></div>
-  <div class="hero__photo"></div>
-  <div class="hero__grain"></div>
+  <div class="player-ui">
+    <div class="episode-meta">
+      <div class="episode-tag">TX-001 // FIRST TRANSMISSION</div>
+      <div class="episode-title">The Physical AI Bottleneck</div>
+    </div>
 
-  <div class="hero__container gs-hero">
-    <!-- Typed.js Terminal Output -->
-    <div class="hero__eyebrow"><span id="typed-output"></span></div>
-    <h1 class="hero__title">Deep conversations with the builders of a resilient future.</h1>
-    <p class="hero__sub">A podcast covering the AI infrastructure, autonomous systems, energy, defense, and supply chain technologies that will define the next decade.</p>
-    <div class="hero__actions">
-      <a href="#latest-episode" class="btn btn--primary">Watch Ep. 001 &rarr;</a>
-      <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="btn btn--ghost">Record with us</a>
+    <div class="progress-container" id="progress-container">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    
+    <div class="time-display">
+      <span id="current-time">00:00</span>
+      <span id="duration">00:00</span>
+    </div>
+
+    <div class="controls">
+      <button class="play-btn" id="play-btn">
+        <div class="icon-play" id="play-icon"></div>
+      </button>
     </div>
   </div>
-</section>
+</div>
 
-<section class="featured-video" id="latest-episode">
-  <div class="section__eyebrow" style="color:var(--accent);">▶ PREMIERE EPISODE</div>
-  <div class="featured-video__wrapper" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-perspective="1000" data-tilt-glare="true" data-tilt-max-glare="0.2">
-    <iframe src="https://www.youtube.com/embed/mLxVav4UceA" title="Telemetrix Studio - Premiere Episode" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-  </div>
-</section>
-
-<div class="marquee"><div class="marquee__track">
-  <span>AI INFRASTRUCTURE</span><span>AUTONOMOUS SYSTEMS</span><span>DEFENSE TECHNOLOGY</span><span>CRITICAL INFRASTRUCTURE</span>
-  <span>AI INFRASTRUCTURE</span><span>AUTONOMOUS SYSTEMS</span><span>DEFENSE TECHNOLOGY</span><span>CRITICAL INFRASTRUCTURE</span>
-</div></div>
-
-<section class="section section--elevated" id="coverage">
-  <div class="section__container">
-    <div class="section__eyebrow gs-fade">02 / Coverage areas</div>
-    <h2 class="section__title gs-fade">Six domains. One thesis: physical systems are the next frontier.</h2>
-
-    <div class="coverage">
-      <div class="coverage__row gs-row">
-        <div class="coverage__num">001</div><div class="coverage__name">AI Infrastructure</div><div class="coverage__desc">Compute, networking, and systems architecture enabling AI at scale.</div>
-      </div>
-      <div class="coverage__row gs-row">
-        <div class="coverage__num">002</div><div class="coverage__name">Autonomous Systems</div><div class="coverage__desc">Self-driving vehicles, robotics, drones, and sensing control systems.</div>
-      </div>
-      <div class="coverage__row gs-row">
-        <div class="coverage__num">003</div><div class="coverage__name">Energy Independence</div><div class="coverage__desc">Clean energy generation, storage, and grid intelligence.</div>
-      </div>
-      <div class="coverage__row gs-row">
-        <div class="coverage__num">004</div><div class="coverage__name">Defense Technology</div><div class="coverage__desc">Military innovation, cybersecurity, and national security capabilities.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<footer>
-  <div class="footer__container">
-    <div class="footer__brand">TELEMETRIX</div>
-    <div class="footer__meta">&copy; 2026 &middot; All transmissions reserved</div>
-  </div>
-</footer>
+<audio id="audio-source" src="episode-001.mp3" crossorigin="anonymous"></audio>
 
 <script>
-  /* 0. SVG Line Drawing (Replicating v4 createDrawable in v3.2.1) */
-  anime({
-    targets: '.draw-text',
-    strokeDashoffset: [anime.setDashoffset, 0],
-    easing: 'easeInOutSine',
-    duration: 3500,
-    delay: 500,
-    direction: 'alternate',
-    loop: true
-  });
+  /**
+   * THE BRAINS: Native Audio API + Canvas Renderer
+   */
+  const audio = document.getElementById('audio-source');
+  const playBtn = document.getElementById('play-btn');
+  const playIcon = document.getElementById('play-icon');
+  const progressBar = document.getElementById('progress-bar');
+  const progressContainer = document.getElementById('progress-container');
+  const currentTimeEl = document.getElementById('current-time');
+  const durationEl = document.getElementById('duration');
 
-  /* 1. Anime.js - Split Text Effect on Background Title */
-  const splitTextEl = document.querySelector('#split-text');
-  splitTextEl.innerHTML = splitTextEl.textContent.replace(/\S/g, "<span class='char'>$&</span>");
-  
-  anime.timeline({loop: false})
-    .add({
-      targets: '#split-text .char',
-      translateY: [100, 0],
-      translateZ: 0,
-      opacity: [0, 1],
-      easing: "easeOutExpo",
-      duration: 1400,
-      delay: (el, i) => 300 + 100 * i
-    });
-
-  /* 2. Typed.js - Terminal Eyebrow */
-  new Typed('#typed-output', {
-    strings: ['Initiating secure connection...', 'Decrypting signal...', 'First transmission > Q2 2026'],
-    typeSpeed: 40,
-    backSpeed: 20,
-    startDelay: 1000,
-    showCursor: true,
-    onComplete: function(self) { setTimeout(() => { self.cursor.remove(); }, 2000); }
-  });
-
-  /* 3. GSAP ScrollTrigger - Animating the Coverage Rows */
-  gsap.registerPlugin(ScrollTrigger);
-  
-  gsap.from(".gs-hero", { y: 50, opacity: 0, duration: 1.5, ease: "power3.out", delay: 0.5 });
-
-  gsap.from(".gs-row", {
-    scrollTrigger: {
-      trigger: ".coverage",
-      start: "top 80%",
-    },
-    y: 40,
-    opacity: 0,
-    duration: 0.8,
-    stagger: 0.15,
-    ease: "power2.out"
-  });
-
-  /* Navbar Scrolled State */
-  window.addEventListener('scroll', () => {
-    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
-  });
-
-  /* 4. Custom Canvas Node Network */
-  const canvas = document.getElementById('network-canvas');
+  const canvas = document.getElementById('visualizer-canvas');
   const ctx = canvas.getContext('2d');
-  let width, height, particles;
 
-  function initCanvas() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-    particles = [];
-    for(let i = 0; i < (window.innerWidth < 768 ? 40 : 80); i++) {
-      particles.push({
-        x: Math.random() * width, y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5,
-        radius: Math.random() * 1.5 + 0.5
-      });
-    }
+  let audioContext, analyser, dataArray;
+  let isPlaying = false;
+  let isInitialized = false;
+
+  // --- Canvas Setup ---
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
   }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
 
-  let mouse = { x: null, y: null };
-  window.addEventListener('mousemove', (e) => { mouse.x = e.x; mouse.y = e.y; });
-
-  function animateCanvas() {
-    requestAnimationFrame(animateCanvas);
-    ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = 'rgba(232, 146, 74, 0.8)';
+  // --- Audio Initialization ---
+  function initAudio() {
+    if (isInitialized) return;
     
-    for(let i = 0; i < particles.length; i++) {
-      let p = particles[i];
-      p.x += p.vx; p.y += p.vy;
-      if(p.x < 0 || p.x > width) p.vx *= -1;
-      if(p.y < 0 || p.y > height) p.vy *= -1;
+    // Create the Web Audio API context
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    
+    // Connect the hidden <audio> element to the analyzer
+    const source = audioContext.createMediaElementSource(audio);
+    source.connect(analyser);
+    analyser.connect(audioContext.destination);
 
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill();
+    // Determines how detailed the frequency data is
+    analyser.fftSize = 256;
+    const bufferLength = analyser.frequencyBinCount;
+    dataArray = new Uint8Array(bufferLength);
 
-      for(let j = i + 1; j < particles.length; j++) {
-        let p2 = particles[j];
-        let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-        if(dist < 120) {
-          ctx.beginPath(); ctx.strokeStyle = `rgba(232, 146, 74, ${0.2 - dist/600})`;
-          ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
-        }
-      }
-      if (mouse.x != null) {
-        let dist = Math.hypot(p.x - mouse.x, p.y - mouse.y);
-        if (dist < 150) {
-          ctx.beginPath(); ctx.strokeStyle = `rgba(244, 241, 234, ${0.3 - dist/500})`;
-          ctx.moveTo(p.x, p.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
-        }
+    isInitialized = true;
+    renderVisualizer();
+  }
+
+  // --- The Renderer (The "Orange Thing Going Crazy") ---
+  function renderVisualizer() {
+    requestAnimationFrame(renderVisualizer);
+
+    // Get current frequency data from the playing audio
+    analyser.getByteFrequencyData(dataArray);
+
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    
+    // Base radius of the circle
+    const baseRadius = window.innerWidth < 768 ? 100 : 150;
+
+    // Draw the frequency ring
+    ctx.beginPath();
+    
+    // Loop through the data points to create a circular path
+    for (let i = 0; i < dataArray.length; i++) {
+      // Normalize data (0 to 1)
+      const value = dataArray[i] / 255;
+      
+      // Calculate angle (spread evenly around a circle)
+      const angle = (i / dataArray.length) * Math.PI * 2;
+      
+      // Calculate how far out this point spikes based on the bass/treble
+      const spikeFactor = value * 150; // The multiplier for the "crazy" effect
+      const radius = baseRadius + spikeFactor;
+
+      const x = centerX + Math.cos(angle) * radius;
+      const y = centerY + Math.sin(angle) * radius;
+
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        // Connect the dots
+        ctx.lineTo(x, y);
       }
     }
+    
+    ctx.closePath();
+    
+    // Styling the line
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#e8924a'; // Your accent orange
+    
+    // Add a glowing effect
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = 'rgba(232, 146, 74, 0.8)';
+    
+    ctx.stroke();
+
+    // Reset shadow for performance
+    ctx.shadowBlur = 0;
   }
-  window.addEventListener('resize', initCanvas);
-  initCanvas(); animateCanvas();
+
+  // --- Controls & UI Logic ---
+  
+  // Format time (e.g., 65s -> 01:05)
+  function formatTime(seconds) {
+    if (isNaN(seconds)) return "00:00";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
+
+  // Play/Pause Toggle
+  playBtn.addEventListener('click', () => {
+    initAudio(); // Must be initialized on user interaction
+
+    // Handle suspended state (browser autoplay policy)
+    if (audioContext.state === 'suspended') {
+      audioContext.resume();
+    }
+
+    if (isPlaying) {
+      audio.pause();
+      playIcon.className = "icon-play";
+    } else {
+      audio.play();
+      playIcon.className = "icon-pause";
+    }
+    isPlaying = !isPlaying;
+  });
+
+  // Update Progress Bar
+  audio.addEventListener('timeupdate', () => {
+    const percent = (audio.currentTime / audio.duration) * 100;
+    progressBar.style.width = `${percent}%`;
+    currentTimeEl.textContent = formatTime(audio.currentTime);
+  });
+
+  // Load Duration
+  audio.addEventListener('loadedmetadata', () => {
+    durationEl.textContent = formatTime(audio.duration);
+  });
+
+  // Click to scrub/seek
+  progressContainer.addEventListener('click', (e) => {
+    const width = progressContainer.clientWidth;
+    const clickX = e.offsetX;
+    const duration = audio.duration;
+    audio.currentTime = (clickX / width) * duration;
+  });
+
 </script>
 </body>
 </html>
