@@ -1,57 +1,4 @@
 /* ----------------------------------------------------
-   0. FLUID CURSOR & MAGNETIC UI (Dennis Snellenberg Style)
----------------------------------------------------- */
-const cursorDot = document.querySelector('.cursor-dot');
-const cursorOutline = document.querySelector('.cursor-outline');
-let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-let outlinePos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-
-window.addEventListener('mousemove', (e) => {
-  mouse.x = e.clientX;
-  mouse.y = e.clientY;
-});
-
-// Smooth Lerp for Cursor Outline
-function renderCursor() {
-  cursorDot.style.transform = `translate(${mouse.x}px, ${mouse.y}px)`;
-  
-  // Easing factor for the trailing outline
-  outlinePos.x += (mouse.x - outlinePos.x) * 0.15;
-  outlinePos.y += (mouse.y - outlinePos.y) * 0.15;
-  cursorOutline.style.transform = `translate(${outlinePos.x}px, ${outlinePos.y}px)`;
-  
-  requestAnimationFrame(renderCursor);
-}
-renderCursor();
-
-// Add hover states for interactive elements
-document.querySelectorAll('a, button, .interactive-hover').forEach(el => {
-  el.addEventListener('mouseenter', () => cursorOutline.classList.add('cursor-hover'));
-  el.addEventListener('mouseleave', () => cursorOutline.classList.remove('cursor-hover'));
-});
-
-// Magnetic Buttons Physics
-document.querySelectorAll('.magnetic, .magnetic-strong, .magnetic-soft').forEach(btn => {
-  btn.addEventListener('mousemove', (e) => {
-    const rect = btn.getBoundingClientRect();
-    const h = rect.width / 2;
-    
-    const x = e.clientX - rect.left - h;
-    const y = e.clientY - rect.top - h;
-    
-    let pull = btn.classList.contains('magnetic-strong') ? 0.6 : 
-               btn.classList.contains('magnetic-soft') ? 0.2 : 0.4;
-
-    gsap.to(btn, { x: x * pull, y: y * pull, duration: 0.3, ease: "power2.out" });
-  });
-  
-  btn.addEventListener('mouseleave', () => {
-    gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, 0.3)" });
-  });
-});
-
-
-/* ----------------------------------------------------
    1. KINETIC TEXT ANIMATION
 ---------------------------------------------------- */
 const textWrapper = document.querySelector('#hero-title');
@@ -78,19 +25,25 @@ gsap.utils.toArray('.gs-fade').forEach(element => {
 });
 gsap.from(".gs-row", { scrollTrigger: { trigger: ".coverage", start: "top 80%" }, x: -20, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power2.out" });
 
-
 /* ----------------------------------------------------
-   2. HOLOGRAPHIC 3D MORPH (Bruno Simon Style)
+   2. HOLOGRAPHIC 3D MORPH (Microphone to Bubble)
 ---------------------------------------------------- */
 const webglContainer = document.getElementById('webgl-container');
 let scene, camera, renderer, morphMesh, material;
 
-// Increase geometry density for ultra-premium look
+// Track mouse exclusively for 3D parallax
+let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
+window.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
+
 const vertexCount = 3000;
 const micPositions = new Float32Array(vertexCount * 3);
 const spherePositions = new Float32Array(vertexCount * 3);
 
-// Create Holographic Glowing Sprite Texture
+// Holographic Texture
 function createGlowTexture() {
   const canvas = document.createElement('canvas');
   canvas.width = 64; canvas.height = 64;
@@ -127,7 +80,6 @@ for (let i = 0; i < vertexCount; i++) {
     const angle = (pIdx / ptsPerRing) * Math.PI * 2;
     const v = (rIdx / (numRings - 1)) * 2 - 1; 
     
-    // Squircle profile
     const profile = Math.pow(1 - Math.pow(Math.abs(v), 3), 0.5); 
     micPositions[i*3] = Math.cos(angle) * 0.45 * profile; 
     micPositions[i*3+1] = (v * 0.6) + 0.6;                
@@ -197,8 +149,8 @@ if (webglContainer) {
     time += 0.015;
 
     // Mouse Parallax Physics
-    const targetRotX = (mouse.y / window.innerHeight - 0.5) * 0.3;
-    const targetRotY = (mouse.x / window.innerWidth - 0.5) * 0.3;
+    const targetRotX = (mouseY / window.innerHeight - 0.5) * 0.3;
+    const targetRotY = (mouseX / window.innerWidth - 0.5) * 0.3;
     
     morphMesh.rotation.x += (targetRotX - morphMesh.rotation.x) * 0.05;
     morphMesh.rotation.y += (targetRotY + time * 0.2 - morphMesh.rotation.y) * 0.05;
