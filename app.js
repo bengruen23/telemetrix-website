@@ -32,57 +32,79 @@ window.addEventListener('scroll', () => {
 
 
 /* ----------------------------------------------------
-   2. THE MORPHING 3D SHAPE (Three.js)
+   2. THE MORPHING 3D SHAPE (Vintage Mic -> Bubble)
 ---------------------------------------------------- */
 const webglContainer = document.getElementById('webgl-container');
 let scene, camera, renderer, morphMesh, material;
 
-// We need two states for the morph target: A Mic and a Sphere. 
-// To morph perfectly, they must have the exact same number of vertices.
-// We use a high-density Sphere and map its points to form a mic initially.
-
-const vertexCount = 1000;
+// Increased vertex count for high-fidelity vintage microphone details
+const vertexCount = 1800;
 const micPositions = new Float32Array(vertexCount * 3);
 const spherePositions = new Float32Array(vertexCount * 3);
 
-// Generate Sphere Vertices (The "Bubble")
+// --- Generate The Bubble (Sphere) ---
 for (let i = 0; i < vertexCount; i++) {
-  // Use golden ratio spiral to distribute points evenly on a sphere
   const phi = Math.acos(1 - 2 * (i + 0.5) / vertexCount);
   const theta = Math.PI * (1 + Math.sqrt(5)) * i;
-  
-  const r = 1.8; // Radius of the bubble
-  
+  const r = 1.3; // Tighter bubble size
   spherePositions[i*3] = r * Math.sin(phi) * Math.cos(theta);
   spherePositions[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
   spherePositions[i*3+2] = r * Math.cos(phi);
 }
 
-// Generate Microphone Vertices
+// --- Generate The Vintage Microphone ---
+const headPoints = 1000;
+const yokePoints = 400;
+const handlePoints = 200;
+const basePoints = 200;
+
 for (let i = 0; i < vertexCount; i++) {
-  // We divide the points into three sections: Head, Handle, Base Ring
-  if (i < vertexCount * 0.5) {
-    // Top capsule (Mic head)
-    const phi = Math.acos(1 - 2 * ((i*2) + 0.5) / vertexCount);
-    const theta = Math.PI * (1 + Math.sqrt(5)) * (i*2);
-    const r = 0.5;
-    micPositions[i*3] = r * Math.sin(phi) * Math.cos(theta);
-    micPositions[i*3+1] = (r * Math.sin(phi) * Math.sin(theta)) + 0.5; // Shifted up
-    micPositions[i*3+2] = r * Math.cos(phi);
-  } else if (i < vertexCount * 0.8) {
-    // Handle (Cylinder)
+  if (i < headPoints) {
+    // 1. The Head: Ribbed, boxy-oval to simulate the grill
+    const numRings = 15;
+    const ptsPerRing = headPoints / numRings;
+    const rIdx = Math.floor(i / ptsPerRing);
+    const pIdx = i % ptsPerRing;
+    
+    const angle = (pIdx / ptsPerRing) * Math.PI * 2;
+    const v = (rIdx / (numRings - 1)) * 2 - 1; // Vertical distribution -1 to 1
+    
+    // Create a boxy curve profile instead of a perfect sphere
+    const profile = Math.sqrt(1 - Math.pow(Math.abs(v), 4)); 
+    
+    micPositions[i*3] = Math.cos(angle) * 0.35 * profile; // X (Width)
+    micPositions[i*3+1] = (v * 0.5) + 0.5;                // Y (Height, shifted up)
+    micPositions[i*3+2] = Math.sin(angle) * 0.25 * profile; // Z (Depth)
+
+  } else if (i < headPoints + yokePoints) {
+    // 2. The Yoke: U-Mount holding the head
+    const idx = i - headPoints;
+    const t = idx / yokePoints; 
+    const angle = Math.PI + (t * Math.PI); // Half circle
+    const r = 0.45; // Wider than the head
+    
+    micPositions[i*3] = Math.cos(angle) * r;
+    micPositions[i*3+1] = Math.sin(angle) * r + 0.5; // Centers around bottom of head
+    micPositions[i*3+2] = (Math.random() - 0.5) * 0.05; // Adds slight thickness
+
+  } else if (i < headPoints + yokePoints + handlePoints) {
+    // 3. The Handle: Straight cylinder down to base
+    const idx = i - (headPoints + yokePoints);
     const angle = Math.random() * Math.PI * 2;
-    const y = (Math.random() * 1.5) - 1.0; // Between -1.0 and 0.5
-    const r = 0.15;
+    const r = 0.05 + (Math.random() * 0.02); 
+    const y = (idx / handlePoints) * -0.7 + 0.05; // Reaches from yoke to base
+    
     micPositions[i*3] = Math.cos(angle) * r;
     micPositions[i*3+1] = y;
     micPositions[i*3+2] = Math.sin(angle) * r;
+
   } else {
-    // Base Ring
+    // 4. The Stand Base: Heavy flat disk
     const angle = Math.random() * Math.PI * 2;
-    const r = 0.7;
+    const r = Math.sqrt(Math.random()) * 0.5; 
+    
     micPositions[i*3] = Math.cos(angle) * r;
-    micPositions[i*3+1] = -0.2;
+    micPositions[i*3+1] = -0.65 + (Math.random() * 0.04); // Disk thickness
     micPositions[i*3+2] = Math.sin(angle) * r;
   }
 }
@@ -96,52 +118,54 @@ if (webglContainer) {
   renderer.setPixelRatio(window.devicePixelRatio);
   webglContainer.appendChild(renderer.domElement);
 
-  // We use Points instead of a Mesh wireframe for a cleaner transition
+  // Load points into Buffer Geometry
   const geometry = new THREE.BufferGeometry();
   
-  // Set initial position to the Mic
+  // Set initial state to Microphone
   geometry.setAttribute('position', new THREE.BufferAttribute(micPositions.slice(), 3));
   
-  // Add morph targets
+  // Set Target state to Bubble
   geometry.morphAttributes.position = [];
   geometry.morphAttributes.position[0] = new THREE.BufferAttribute(spherePositions, 3);
 
   material = new THREE.PointsMaterial({ 
     color: 0xe8924a,
-    size: 0.03,
+    size: 0.035, // Size of the orange data points
     transparent: true,
-    opacity: 0.6
+    opacity: 0.65 // High visibility for the mic
   });
   
   morphMesh = new THREE.Points(geometry, material);
   scene.add(morphMesh);
   
-  camera.position.z = 4.5;
+  camera.position.z = 4.2;
   
   let time = 0;
-  let isMorphed = false;
   let morphProgress = 0;
 
   function animate3D() {
     requestAnimationFrame(animate3D);
     time += 0.02;
 
-    // Organic Rotation
-    morphMesh.rotation.y = time * 0.5;
-    morphMesh.rotation.x = Math.sin(time * 0.2) * 0.2;
-    morphMesh.position.y = Math.sin(time * 0.8) * 0.1;
+    // Organic hover and rotation
+    morphMesh.rotation.y = time * 0.4;
+    morphMesh.position.y = Math.sin(time * 0.8) * 0.05;
+    
+    // Bubble breathing effect (only active when morphed into bubble)
+    if (window.isMorphed) {
+        morphMesh.rotation.x = Math.sin(time * 0.2) * 0.2;
+    } else {
+        morphMesh.rotation.x = 0;
+    }
 
-    // Handle the morph transition
-    if (isMorphed && morphProgress < 1) {
-      morphProgress += 0.02; // Speed of transforming into bubble
-    } else if (!isMorphed && morphProgress > 0) {
-      morphProgress -= 0.02; // Speed of transforming back to mic
+    // Morph translation logic
+    if (window.isMorphed && morphProgress < 1) {
+      morphProgress += 0.015; // Smoothly slide to bubble
+    } else if (!window.isMorphed && morphProgress > 0) {
+      morphProgress -= 0.015; // Smoothly slide to mic
     }
     
-    // Clamp
     morphProgress = Math.max(0, Math.min(1, morphProgress));
-
-    // Apply morph influence (0 = Mic, 1 = Sphere)
     morphMesh.morphTargetInfluences = [morphProgress];
 
     renderer.render(scene, camera);
@@ -217,13 +241,12 @@ if (bgCanvas) {
 }
 
 /* ----------------------------------------------------
-   4. UI LOGIC (Play Button -> Morph Trigger)
+   4. UI LOGIC (Fake 15s Scrubber & Morph Trigger)
 ---------------------------------------------------- */
 const masterPlayBtn = document.getElementById('master-play-btn');
 const iconPlay = document.getElementById('master-icon-play');
 const iconPause = document.getElementById('master-icon-pause');
 const scrubberFill = document.getElementById('scrubber-fill');
-const timeCurrent = document.getElementById('time-current');
 
 let isPlaying = false;
 let fakeTime = 0;
@@ -234,52 +257,47 @@ if (masterPlayBtn) {
     isPlaying = !isPlaying;
     
     if (isPlaying) {
-      // 1. UI updates to Pause
+      // 1. Swap icon to Pause
       iconPlay.style.display = 'none';
       iconPause.style.display = 'block';
       masterPlayBtn.style.borderColor = 'var(--accent)';
       
-      // 2. Trigger the 3D Morph (Microphone -> Bubble)
+      // 2. Trigger Morph (Mic -> Bubble)
+      window.isMorphed = true; 
       if (morphMesh) {
         morphMesh.material.color.setHex(0xffaa55); // Flash bright
         morphMesh.material.opacity = 0.9;
-        
-        // This variable is checked in the animate3D loop to run the morph
-        // We set it globally since the loop is running independently
-        window.isMorphed = true; 
       }
       
       // 3. Ramp up background speed
       speedMultiplier = 15;
       
-      // Decay background speed back to normal slowly
+      // Decay flash and background speed slowly
       let decayInterval = setInterval(() => {
         speedMultiplier -= 0.5;
         if(speedMultiplier <= 1) {
           speedMultiplier = 1;
           clearInterval(decayInterval);
           if (morphMesh) {
-            morphMesh.material.color.setHex(0xe8924a); // Return to standard orange
+            morphMesh.material.color.setHex(0xe8924a); // Return to orange
+            morphMesh.material.opacity = 0.5; // Slightly ghosted as a bubble
           }
         }
       }, 100);
 
-      // 4. Start the fake scrubber moving
+      // 4. Start the 15-second looping scrubber
       clearInterval(scrubberInterval);
       scrubberInterval = setInterval(() => {
-        fakeTime += 1;
+        fakeTime += 0.05; // Ticks every 50ms
         
-        // Update Scrubber Width
-        const totalDuration = 42 * 60 + 15; // 42:15 in seconds
-        const percent = (fakeTime / totalDuration) * 100;
+        if (fakeTime > 15) {
+            fakeTime = 0; // Loop back to 0 after 15 seconds
+        }
+        
+        const percent = (fakeTime / 15) * 100;
         scrubberFill.style.width = `${percent}%`;
         
-        // Update Time Text
-        const m = Math.floor(fakeTime / 60).toString().padStart(2, '0');
-        const s = (fakeTime % 60).toString().padStart(2, '0');
-        timeCurrent.innerText = `${m}:${s}`;
-        
-      }, 1000); // Ticks every second
+      }, 50);
 
     } else {
       // Pause clicked
@@ -289,11 +307,11 @@ if (masterPlayBtn) {
       
       // Morph back (Bubble -> Microphone)
       window.isMorphed = false; 
-      
       if (morphMesh) {
-        morphMesh.material.opacity = 0.6;
+        morphMesh.material.opacity = 0.65; // High visibility for Mic
       }
       
+      // Pause scrubber
       clearInterval(scrubberInterval);
     }
   });
