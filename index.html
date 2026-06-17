@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TELEMETRIX | GODLY TIER</title>
+<title>TELEMETRIX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;800&display=swap" rel="stylesheet" />
@@ -27,7 +27,7 @@
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; cursor: none; /* Hide default cursor for custom follower */ }
+  html { scroll-behavior: smooth; }
 
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -40,16 +40,13 @@
 
   .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 
-  /* ---------- Custom Fluid Cursor ---------- */
-  .cursor-dot, .cursor-outline { position: fixed; top: 0; left: 0; transform: translate(-50%, -50%); border-radius: 50%; z-index: 9999; pointer-events: none; }
-  .cursor-dot { width: 6px; height: 6px; background-color: var(--accent); }
-  .cursor-outline { width: 40px; height: 40px; border: 1px solid var(--ink-tertiary); transition: width 0.2s, height 0.2s, background-color 0.2s; }
-  .cursor-hover { width: 60px; height: 60px; background-color: var(--accent-glow); border-color: transparent; mix-blend-mode: screen; }
-
   /* ---------- Nav ---------- */
   .nav { position: fixed; top: 0; left: 0; right: 0; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; z-index: 100; mix-blend-mode: difference; }
   .nav__brand { font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; letter-spacing: 0.2em; font-weight: 800; color: #fff; }
-  .nav__cta { font-size: 0.875rem; border: 1px solid rgba(255,255,255,0.2); padding: 0.5rem 1.25rem; border-radius: 999px; text-decoration: none; color: #fff; transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); }
+  .nav__links { display: flex; gap: 2rem; font-size: 0.875rem; }
+  .nav__links a { color: var(--ink-secondary); text-decoration: none; transition: color 150ms; }
+  .nav__links a:hover { color: var(--ink-primary); }
+  .nav__cta { font-size: 0.875rem; border: 1px solid rgba(255,255,255,0.2); padding: 0.5rem 1.25rem; border-radius: 999px; text-decoration: none; color: #fff; transition: all 0.3s ease; }
   .nav__cta:hover { background: #fff; color: #000; }
 
   /* ---------- HERO ---------- */
@@ -71,10 +68,10 @@
   .hero__title .word { display: inline-block; overflow: hidden; vertical-align: bottom; margin-right: 0.2em; padding-bottom: 0.1em; }
   .hero__title .char { display: inline-block; transform: translateY(100%); opacity: 0; }
   
-  .hero__sub { font-size: clamp(1.125rem, 1.5vw, 1.5rem); font-weight: 400; line-height: 1.5; color: var(--ink-secondary); max-width: 50ch; margin-bottom: 4rem; opacity: 0; transform: translateY(20px); }
+  .hero__sub { font-size: clamp(1.125rem, 1.5vw, 1.5rem); font-weight: 400; line-height: 1.5; color: var(--ink-secondary); max-width: 50ch; margin-bottom: 3rem; opacity: 0; transform: translateY(20px); }
 
-  /* ---------- Magnetic Media Player ---------- */
-  .hero__actions { display: flex; flex-direction: column; gap: 2rem; width: 100%; max-width: 500px; opacity: 0; }
+  /* ---------- Restored Buttons & Playbar ---------- */
+  .hero__actions { display: flex; flex-direction: column; gap: 1.5rem; width: 100%; max-width: 500px; opacity: 0; }
   
   .media-player {
     display: flex; flex-direction: column; gap: 1.5rem; width: 100%;
@@ -85,19 +82,20 @@
   
   .media-controls { display: flex; justify-content: space-between; align-items: center; width: 100%; }
 
-  .ctrl-btn { background: transparent; border: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; opacity: 0.5; transition: opacity 0.3s; }
-  /* Hover handled by JS cursor logic */
+  .ctrl-btn { background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; opacity: 0.5; transition: opacity 0.3s, transform 0.2s; }
+  .ctrl-btn:hover { opacity: 1; transform: scale(1.1); }
   
   .icon-prev { width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-right: 12px solid var(--ink-primary); position: relative; }
   .icon-prev::before { content: ""; position: absolute; left: -3px; top: -6px; height: 12px; width: 2px; background: var(--ink-primary); }
   .icon-next { width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 12px solid var(--ink-primary); position: relative; }
   .icon-next::after { content: ""; position: absolute; left: 11px; top: -6px; height: 12px; width: 2px; background: var(--ink-primary); }
 
-  /* Magnetic Master Play */
+  /* Master Play */
   .play-btn-master {
     background: var(--ink-primary); border: none; border-radius: 50%; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 10px 30px rgba(244, 241, 234, 0.1); transition: background 0.4s;
+    box-shadow: 0 10px 30px rgba(244, 241, 234, 0.1); transition: background 0.4s, transform 0.2s; cursor: pointer;
   }
+  .play-btn-master:hover { transform: scale(1.05); }
   .play-btn-master.playing { background: var(--accent); box-shadow: 0 10px 40px var(--accent-glow); }
   
   .icon-play { width: 0; height: 0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 14px solid var(--bg-base); margin-left: 4px; }
@@ -105,8 +103,24 @@
 
   /* Scrubber */
   .scrubber-container { display: flex; align-items: center; width: 100%; padding: 0.5rem 0; cursor: pointer; }
-  .scrubber-track { flex: 1; height: 2px; background: var(--rule-strong); position: relative; overflow: hidden; }
+  .scrubber-track { flex: 1; height: 3px; background: var(--rule-strong); position: relative; overflow: hidden; border-radius: 2px; }
   .scrubber-fill { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--accent); transition: width 0.1s linear; }
+
+  /* Action Buttons Row */
+  .action-buttons { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem; }
+  .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.5rem; border-radius: 999px; font-size: 0.9375rem; font-weight: 500; text-decoration: none; transition: all 150ms; cursor: pointer; }
+  .btn--primary { background: var(--ink-primary); color: var(--bg-base); border: none; }
+  .btn--primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -10px rgba(244, 241, 234, 0.5); }
+  .btn--ghost { border: 1px solid var(--rule-strong); color: var(--ink-primary); }
+  .btn--ghost:hover { border-color: var(--ink-primary); }
+
+  /* ---------- Featured Video Embed ---------- */
+  .featured-video { background: var(--bg-elevated); padding: 8rem 2rem; display: flex; flex-direction: column; align-items: center; border-top: 1px solid var(--rule); }
+  .featured-video__eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem; }
+  .featured-video__eyebrow::before { content: "▶"; font-size: 0.6rem; }
+  .featured-video__wrapper { position: relative; width: 100%; max-width: 1024px; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--rule-strong); transition: transform 0.3s ease; }
+  .featured-video__wrapper:hover { transform: translateY(-5px); box-shadow: 0 30px 60px -12px rgba(255, 122, 0, 0.15), 0 0 0 1px var(--rule-strong); }
+  .featured-video__wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 
   /* ---------- Marquee ---------- */
   .marquee { background: var(--bg-base); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 2rem 0; overflow: hidden; white-space: nowrap; }
@@ -116,9 +130,11 @@
 
   /* ---------- Sections ---------- */
   .section { background: var(--bg-base); color: var(--ink-primary); padding: 10rem 2rem; position: relative; }
+  .section--elevated { background: var(--bg-elevated); }
   .section__container { max-width: 1280px; margin: 0 auto; }
   .section__eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-tertiary); margin-bottom: 3rem; }
   .section__title { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 500; line-height: 1.05; letter-spacing: -0.02em; max-width: 20ch; margin-bottom: 2rem; }
+  .section__lead { font-size: clamp(1.125rem, 1.4vw, 1.375rem); line-height: 1.55; color: var(--ink-secondary); max-width: 60ch; }
 
   .coverage { margin-top: 6rem; border-top: 1px solid var(--rule); }
   .coverage__row { display: grid; grid-template-columns: 80px 1fr 2fr; gap: 2rem; padding: 2.5rem 0; border-bottom: 1px solid var(--rule); align-items: baseline; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); }
@@ -129,27 +145,27 @@
 
   /* Footer */
   footer { background: var(--bg-base); padding: 4rem 2rem 2rem; border-top: 1px solid var(--rule); }
-  .footer__container { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-end; }
+  .footer__container { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 2rem;}
   .footer__brand { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: 800; letter-spacing: 0.2em; }
 
   @media (max-width: 768px) {
-    html { cursor: auto; }
-    .cursor-dot, .cursor-outline { display: none; }
     #webgl-container { width: 100%; height: 55vh; bottom: 30%; opacity: 0.5; }
     .hero__title { font-size: 3rem; margin-top: 2rem; }
     .coverage__row { grid-template-columns: 60px 1fr; grid-template-rows: auto auto; padding: 1.5rem 0; }
     .coverage__desc { grid-column: 2; }
+    .nav__links { display: none; }
   }
 </style>
 </head>
 <body>
 
-<div class="cursor-dot"></div>
-<div class="cursor-outline"></div>
-
 <nav class="nav" id="navbar">
   <div class="nav__brand">TELEMETRIX</div>
-  <a href="#" class="nav__cta magnetic">Connect</a>
+  <div class="nav__links">
+    <a href="#about">About</a>
+    <a href="#coverage">Coverage</a>
+  </div>
+  <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="nav__cta">Record with us</a>
 </nav>
 
 <section class="hero">
@@ -160,34 +176,51 @@
   <div class="hero__grain"></div>
 
   <div class="hero__container">
-    <div class="hero__eyebrow el-eyebrow">Q2 2026 TRANSMISSION</div>
+    <div class="hero__eyebrow el-eyebrow">FIRST TRANSMISSION &middot; Q2 2026</div>
     <h1 class="hero__title" id="hero-title">
       Deep conversations with the builders of a resilient future.
     </h1>
-    <p class="hero__sub el-sub">AI infrastructure, autonomous systems, energy, and defense technology defining the next decade.</p>
+    <p class="hero__sub el-sub">A podcast covering the AI infrastructure, autonomous systems, energy, defense, and supply chain technologies that will define the next decade.</p>
     
     <div class="hero__actions el-actions">
       <div class="media-player">
         <div class="media-controls">
-          <div class="ctrl-btn magnetic-soft" style="font-family:'JetBrains Mono'; font-size: 0.8rem; color: #fff;">001</div>
-          <button class="ctrl-btn magnetic"><div class="icon-prev"></div></button>
+          <div class="ctrl-btn" style="font-family:'JetBrains Mono'; font-size: 0.8rem; color: #fff;">001</div>
+          <button class="ctrl-btn"><div class="icon-prev"></div></button>
           
-          <button id="master-play-btn" class="play-btn-master magnetic-strong">
+          <button id="master-play-btn" class="play-btn-master">
             <div id="master-icon-play" class="icon-play"></div>
             <div id="master-icon-pause" class="icon-pause"></div>
           </button>
           
-          <button class="ctrl-btn magnetic"><div class="icon-next"></div></button>
-          <div class="ctrl-btn magnetic-soft" style="font-family:'JetBrains Mono'; font-size: 0.8rem; color: #fff;">LIVE</div>
+          <button class="ctrl-btn"><div class="icon-next"></div></button>
+          <div class="ctrl-btn" style="font-family:'JetBrains Mono'; font-size: 0.8rem; color: #fff;">LIVE</div>
         </div>
         
-        <div class="scrubber-container interactive-hover">
+        <div class="scrubber-container">
           <div class="scrubber-track">
             <div id="scrubber-fill" class="scrubber-fill"></div>
           </div>
         </div>
       </div>
+
+      <div class="action-buttons">
+        <a href="#latest-episode" class="btn btn--primary">Watch Ep. 001 &darr;</a>
+        <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="btn btn--ghost">Record with us</a>
+      </div>
     </div>
+  </div>
+</section>
+
+<section class="featured-video" id="latest-episode">
+  <div class="featured-video__eyebrow">Premiere Episode</div>
+  <div class="featured-video__wrapper">
+    <iframe 
+      src="https://www.youtube.com/embed/mLxVav4UceA" 
+      title="Telemetrix Studio - Premiere Episode" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+      allowfullscreen>
+    </iframe>
   </div>
 </section>
 
@@ -199,22 +232,42 @@
   </div>
 </div>
 
-<section class="section" id="coverage">
+<section class="section" id="about">
+  <div class="section__container gs-fade">
+    <div class="section__eyebrow">01 / About</div>
+    <h2 class="section__title">The companies building our resilient future don't get enough airtime.</h2>
+    <p class="section__lead">While everyone talks about consumer AI, the real action is in infrastructure &mdash; the systems that will determine which countries, companies, and communities thrive in an increasingly uncertain world. Telemetrix is where these builders tell their stories.</p>
+  </div>
+</section>
+
+<section class="section section--elevated" id="coverage">
   <div class="section__container">
-    <div class="section__eyebrow gs-fade">Coverage areas</div>
+    <div class="section__eyebrow gs-fade">02 / Coverage areas</div>
     <h2 class="section__title gs-fade">Physical systems are the final frontier.</h2>
 
     <div class="coverage">
-      <div class="coverage__row gs-row interactive-hover">
+      <div class="coverage__row gs-row">
         <div class="coverage__num">001</div><div class="coverage__name">AI Infrastructure</div><div class="coverage__desc">Compute, networking, and systems architecture enabling AI at scale.</div>
       </div>
-      <div class="coverage__row gs-row interactive-hover">
+      <div class="coverage__row gs-row">
         <div class="coverage__num">002</div><div class="coverage__name">Autonomous Systems</div><div class="coverage__desc">Self-driving vehicles, robotics, drones, and sensing control systems.</div>
       </div>
-      <div class="coverage__row gs-row interactive-hover">
+      <div class="coverage__row gs-row">
         <div class="coverage__num">003</div><div class="coverage__name">Defense Technology</div><div class="coverage__desc">Military innovation, cybersecurity, and national security capabilities.</div>
       </div>
+      <div class="coverage__row gs-row">
+        <div class="coverage__num">004</div><div class="coverage__name">Energy Independence</div><div class="coverage__desc">Clean energy generation, storage, and grid intelligence.</div>
+      </div>
     </div>
+  </div>
+</section>
+
+<section class="section" id="book">
+  <div class="section__container gs-fade">
+    <div class="section__eyebrow">03 / Record with us</div>
+    <h2 class="section__title">Building something that fits the thesis? Let's talk.</h2>
+    <p class="section__lead" style="margin-bottom: 3rem;">Founders, operators, and investors working on AI infrastructure, autonomous systems, energy, defense, and supply chains.</p>
+    <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="btn btn--primary">Book a recording &rarr;</a>
   </div>
 </section>
 
