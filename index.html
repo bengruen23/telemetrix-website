@@ -96,7 +96,6 @@
     width: 100%;
   }
 
-  /* Control Icons (CSS Shapes) */
   .ctrl-btn { background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; opacity: 0.7; transition: opacity 0.2s, transform 0.2s; }
   .ctrl-btn:hover { opacity: 1; transform: scale(1.05); }
   
@@ -108,7 +107,6 @@
 
   .icon-shuffle { width: 16px; height: 16px; border: 2px solid transparent; border-top-color: var(--ink-primary); border-radius: 50%; position: relative; }
   
-  /* Master Play Button */
   .play-btn-master {
     background: transparent;
     border: 2px solid var(--ink-primary);
@@ -127,11 +125,10 @@
   .icon-pause { width: 12px; height: 14px; border-left: 4px solid var(--accent); border-right: 4px solid var(--accent); display: none; }
   .play-btn-master:hover .icon-play { border-left-color: var(--accent); }
 
-  /* Scrubber Bar */
-  .scrubber-container { display: flex; align-items: center; gap: 1rem; width: 100%; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--ink-secondary); }
-  .scrubber-track { flex: 1; height: 4px; background: var(--rule-strong); border-radius: 2px; position: relative; cursor: pointer; }
+  /* Timeless Scrubber Bar */
+  .scrubber-container { display: flex; align-items: center; width: 100%; padding: 0.5rem 0; }
+  .scrubber-track { flex: 1; height: 4px; background: var(--rule-strong); border-radius: 2px; position: relative; cursor: pointer; overflow: hidden; }
   .scrubber-fill { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--accent); border-radius: 2px; transition: width 0.1s linear; }
-  .scrubber-knob { position: absolute; right: -6px; top: -4px; width: 12px; height: 12px; background: var(--ink-primary); border-radius: 50%; box-shadow: 0 0 8px rgba(0,0,0,0.5); }
 
   /* Anchor Link */
   .watch-link { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; letter-spacing: 0.1em; color: var(--ink-tertiary); text-decoration: none; transition: color 0.2s; align-self: flex-start; margin-left: 0.5rem; text-transform: uppercase; }
@@ -228,13 +225,9 @@
         </div>
         
         <div class="scrubber-container">
-          <span id="time-current">00:00</span>
           <div class="scrubber-track">
-            <div id="scrubber-fill" class="scrubber-fill">
-              <div class="scrubber-knob"></div>
-            </div>
+            <div id="scrubber-fill" class="scrubber-fill"></div>
           </div>
-          <span id="time-total">42:15</span>
         </div>
       </div>
       
