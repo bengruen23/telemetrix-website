@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
 <style>
   :root {
     --bg-base:        #0a0a0c;
@@ -30,6 +32,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     line-height: 1.5;
+    overflow-x: hidden;
   }
 
   .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
@@ -44,6 +47,13 @@
     align-items: center;
     z-index: 100;
     color: var(--ink-primary);
+    background: rgba(10, 10, 12, 0.7);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.3s;
+  }
+  .nav.scrolled {
+    border-bottom: 1px solid var(--rule);
   }
   .nav__brand {
     font-family: 'JetBrains Mono', monospace;
@@ -78,59 +88,60 @@
     background: var(--bg-base);
   }
 
-  /* THE OMBRE — its own visible layer.
-     A radial bloom of warm amber in the lower right, fading through
-     deep red-brown to near-black across the canvas. This exists
-     independently of the photo, so it's visible on first paint and
-     even if the image fails. */
+  /* Interactive Canvas Background */
+  #network-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    opacity: 0.6;
+  }
+
   .hero__ombre {
     position: absolute;
     inset: 0;
-    z-index: 1;
+    z-index: 2;
     background:
       radial-gradient(ellipse 90% 70% at 80% 90%,
-        rgba(232, 146, 74, 0.55) 0%,
-        rgba(196, 106, 30, 0.35) 25%,
-        rgba(120, 50, 20, 0.25) 50%,
-        rgba(40, 18, 12, 0.15) 75%,
+        rgba(232, 146, 74, 0.35) 0%,
+        rgba(196, 106, 30, 0.20) 25%,
+        rgba(120, 50, 20, 0.15) 50%,
+        rgba(40, 18, 12, 0.05) 75%,
         rgba(10, 10, 12, 0) 100%),
-      linear-gradient(180deg, #0a0a0c 0%, #14100d 100%);
+      linear-gradient(180deg, rgba(10,10,12,0.4) 0%, #14100d 100%);
   }
 
-  /* The photo sits as a feature element in the lower right,
-     not a full-bleed background. Lets the ombre breathe. */
   .hero__photo {
     position: absolute;
     bottom: 0;
     right: 0;
     width: 55%;
     height: 75%;
-    z-index: 2;
+    z-index: 3;
     background-image: url('https://plus.unsplash.com/premium_photo-1664195074951-fe91ec456eed?w=1800&auto=format&fit=crop&q=80');
     background-size: cover;
     background-position: center;
-    /* Soft mask so the photo blends into the ombre instead of
-       sitting in a hard rectangle. The mic stays sharp; edges fade. */
     -webkit-mask-image: radial-gradient(ellipse 80% 80% at 70% 60%, #000 30%, transparent 90%);
             mask-image: radial-gradient(ellipse 80% 80% at 70% 60%, #000 30%, transparent 90%);
     mix-blend-mode: lighten;
-    opacity: 0.85;
+    opacity: 0.65;
   }
 
-  /* Subtle grain over everything to prevent banding */
   .hero__grain {
     position: absolute;
     inset: 0;
-    z-index: 3;
+    z-index: 4;
     pointer-events: none;
-    opacity: 0.4;
+    opacity: 0.3;
     mix-blend-mode: overlay;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
   }
 
   .hero__container {
     position: relative;
-    z-index: 4;
+    z-index: 5;
     max-width: 1280px;
     margin: 0 auto;
     width: 100%;
@@ -151,6 +162,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    opacity: 0; /* For AnimeJS */
   }
   .hero__eyebrow::before {
     content: "";
@@ -158,6 +170,13 @@
     background: var(--accent);
     border-radius: 50%;
     box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(232, 146, 74, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(232, 146, 74, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(232, 146, 74, 0); }
   }
 
   .hero__title {
@@ -169,6 +188,10 @@
     margin-bottom: 2rem;
     color: var(--ink-primary);
   }
+  
+  /* Split text classes for animation */
+  .word { display: inline-block; overflow: hidden; vertical-align: bottom; }
+  .char { display: inline-block; transform: translateY(100%); opacity: 0; }
 
   .hero__sub {
     font-size: clamp(1.125rem, 1.4vw, 1.375rem);
@@ -177,9 +200,14 @@
     color: var(--ink-secondary);
     max-width: 48ch;
     margin-bottom: 3rem;
+    opacity: 0; /* For AnimeJS */
+    transform: translateY(20px);
   }
 
-  .hero__actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .hero__actions { 
+    display: flex; gap: 1rem; flex-wrap: wrap; 
+    opacity: 0; /* For AnimeJS */
+  }
 
   .btn {
     display: inline-flex;
@@ -190,13 +218,18 @@
     font-size: 0.9375rem;
     font-weight: 500;
     text-decoration: none;
-    transition: transform 150ms, background 150ms, border-color 150ms;
+    transition: transform 150ms, background 150ms, border-color 150ms, box-shadow 150ms;
+    position: relative;
+    overflow: hidden;
   }
   .btn--primary {
     background: var(--ink-primary);
     color: var(--bg-base);
   }
-  .btn--primary:hover { transform: translateY(-1px); }
+  .btn--primary:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 10px 20px -10px rgba(244, 241, 234, 0.5);
+  }
   .btn--ghost {
     border: 1px solid var(--rule-strong);
     color: var(--ink-primary);
@@ -215,6 +248,55 @@
     color: var(--ink-tertiary);
     letter-spacing: 0.08em;
     z-index: 5;
+    opacity: 0;
+  }
+
+  /* ---------- Featured Video Embed ---------- */
+  .featured-video {
+    background: var(--bg-elevated);
+    padding: 6rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-top: 1px solid var(--rule);
+  }
+  .featured-video__eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .featured-video__eyebrow::before {
+    content: "▶";
+    font-size: 0.6rem;
+  }
+  .featured-video__wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 1024px;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--rule-strong);
+    transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+  .featured-video__wrapper:hover {
+    transform: scale(1.02);
+    box-shadow: 0 30px 60px -12px rgba(232, 146, 74, 0.15), 0 0 0 1px var(--rule-strong);
+  }
+  .featured-video__wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
   }
 
   /* ---------- Marquee ---------- */
@@ -245,7 +327,7 @@
     to { transform: translateX(-50%); }
   }
 
-  /* ---------- Sections — ALL DARK ---------- */
+  /* ---------- Sections ---------- */
   .section {
     background: var(--bg-base);
     color: var(--ink-primary);
@@ -291,17 +373,23 @@
     padding: 1.75rem 0;
     border-bottom: 1px solid var(--rule);
     align-items: baseline;
-    transition: padding 200ms, background 200ms;
+    transition: padding 300ms cubic-bezier(0.165, 0.84, 0.44, 1), background 300ms;
+    cursor: crosshair;
   }
   .coverage__row:hover {
-    padding-left: 0.5rem;
-    background: rgba(232, 146, 74, 0.03);
+    padding-left: 1.5rem;
+    background: linear-gradient(90deg, rgba(232, 146, 74, 0.08) 0%, transparent 100%);
+    border-bottom: 1px solid var(--accent);
+  }
+  .coverage__row:hover .coverage__num {
+    color: var(--accent);
   }
   .coverage__num {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.75rem;
     color: var(--ink-tertiary);
     letter-spacing: 0.1em;
+    transition: color 0.3s;
   }
   .coverage__name {
     font-size: 1.25rem;
@@ -315,7 +403,7 @@
     line-height: 1.5;
   }
 
-  /* Quote section gets a subtle ombre too */
+  /* Quote */
   .quote {
     background:
       radial-gradient(ellipse 60% 80% at 90% 50%,
@@ -373,11 +461,7 @@
     .nav__links { display: none; }
     .hero__container { padding: 5rem 1.25rem 6rem; }
     .hero__meta { display: none; }
-    .hero__photo {
-      width: 100%;
-      height: 50%;
-      opacity: 0.45;
-    }
+    .hero__photo { width: 100%; height: 50%; opacity: 0.45; }
     .hero__ombre {
       background:
         radial-gradient(ellipse 100% 60% at 50% 90%,
@@ -386,6 +470,7 @@
           rgba(10, 10, 12, 0) 80%),
         linear-gradient(180deg, #0a0a0c 0%, #14100d 100%);
     }
+    .featured-video { padding: 4rem 1.25rem; }
     .section, .quote { padding: 5rem 1.25rem; }
     .coverage__row {
       grid-template-columns: 60px 1fr;
@@ -397,7 +482,7 @@
 </head>
 <body>
 
-<nav class="nav">
+<nav class="nav" id="navbar">
   <div class="nav__brand">TELEMETRIX</div>
   <div class="nav__links">
     <a href="#about">About</a>
@@ -408,23 +493,42 @@
 </nav>
 
 <section class="hero">
+  <canvas id="network-canvas"></canvas>
+  
   <div class="hero__ombre"></div>
   <div class="hero__photo"></div>
   <div class="hero__grain"></div>
 
   <div class="hero__container">
-    <div class="hero__eyebrow mono">First transmission &middot; Q2 2026</div>
-    <h1 class="hero__title">Deep conversations with the builders of a resilient future.</h1>
-    <p class="hero__sub">A podcast covering the AI infrastructure, autonomous systems, energy, defense, and supply chain technologies that will define the next decade.</p>
-    <div class="hero__actions">
-      <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="btn btn--primary">Record with us &rarr;</a>
-      <a href="#coverage" class="btn btn--ghost">What we cover</a>
+    <div class="hero__eyebrow mono el-eyebrow">First transmission &middot; Q2 2026</div>
+    
+    <h1 class="hero__title" id="hero-title">
+      Deep conversations with the builders of a resilient future.
+    </h1>
+    
+    <p class="hero__sub el-sub">A podcast covering the AI infrastructure, autonomous systems, energy, defense, and supply chain technologies that will define the next decade.</p>
+    
+    <div class="hero__actions el-actions">
+      <a href="#latest-episode" class="btn btn--primary">Watch Ep. 001 &rarr;</a>
+      <a href="https://calendar.app.google/X5yKyyUdwBL37vuFA" class="btn btn--ghost">Record with us</a>
     </div>
   </div>
 
-  <div class="hero__meta">
+  <div class="hero__meta el-meta">
     <span>TX-001 / GAINESVILLE</span>
     <span>EST. 2026</span>
+  </div>
+</section>
+
+<section class="featured-video" id="latest-episode">
+  <div class="featured-video__eyebrow">Premiere Episode</div>
+  <div class="featured-video__wrapper">
+    <iframe 
+      src="https://www.youtube.com/embed/mLxVav4UceA" 
+      title="Telemetrix Studio - Premiere Episode" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+      allowfullscreen>
+    </iframe>
   </div>
 </section>
 
@@ -446,7 +550,7 @@
 </div>
 
 <section class="section" id="about">
-  <div class="section__container">
+  <div class="section__container scroll-anim">
     <div class="section__eyebrow">01 / About</div>
     <h2 class="section__title">The companies building our resilient future don't get enough airtime.</h2>
     <p class="section__lead">While everyone talks about consumer AI, the real action is in infrastructure &mdash; the systems that will determine which countries, companies, and communities thrive in an increasingly uncertain world. Telemetrix is where these builders tell their stories.</p>
@@ -454,37 +558,37 @@
 </section>
 
 <section class="section section--elevated" id="coverage">
-  <div class="section__container">
+  <div class="section__container scroll-anim">
     <div class="section__eyebrow">02 / Coverage areas</div>
     <h2 class="section__title">Six domains. One thesis: physical systems are the next frontier.</h2>
 
     <div class="coverage">
-      <div class="coverage__row">
+      <div class="coverage__row cover-item">
         <div class="coverage__num">001</div>
         <div class="coverage__name">AI Infrastructure</div>
         <div class="coverage__desc">The compute, networking, and systems architecture enabling artificial intelligence at scale.</div>
       </div>
-      <div class="coverage__row">
+      <div class="coverage__row cover-item">
         <div class="coverage__num">002</div>
         <div class="coverage__name">Autonomous Systems</div>
         <div class="coverage__desc">Self-driving vehicles, robotics, drones, and the sensing &amp; control systems that let machines operate independently.</div>
       </div>
-      <div class="coverage__row">
+      <div class="coverage__row cover-item">
         <div class="coverage__num">003</div>
         <div class="coverage__name">Energy Independence</div>
         <div class="coverage__desc">Clean energy generation, storage, grid intelligence, and the technologies reshaping how we produce power.</div>
       </div>
-      <div class="coverage__row">
+      <div class="coverage__row cover-item">
         <div class="coverage__num">004</div>
         <div class="coverage__name">Supply Chain Resilience</div>
         <div class="coverage__desc">Logistics, manufacturing automation, inventory intelligence, and the systems making global trade more robust.</div>
       </div>
-      <div class="coverage__row">
+      <div class="coverage__row cover-item">
         <div class="coverage__num">005</div>
         <div class="coverage__name">Defense Technology</div>
         <div class="coverage__desc">Military innovation, cybersecurity, dual-use technologies, and the companies building national security capabilities.</div>
       </div>
-      <div class="coverage__row">
+      <div class="coverage__row cover-item">
         <div class="coverage__num">006</div>
         <div class="coverage__name">Critical Infrastructure</div>
         <div class="coverage__desc">Communication networks, industrial control systems, and the foundational technologies of modern society.</div>
@@ -494,14 +598,14 @@
 </section>
 
 <section class="quote">
-  <div class="quote__container">
+  <div class="quote__container scroll-anim">
     <p class="quote__text">Every conversation is designed to extract insights you won't hear elsewhere &mdash; the technical details, market dynamics, and strategic thinking behind the most important technologies being built today.</p>
     <div class="quote__attr">&mdash; Ben Gruen, host</div>
   </div>
 </section>
 
 <section class="section section--elevated" id="book">
-  <div class="section__container">
+  <div class="section__container scroll-anim">
     <div class="section__eyebrow">03 / Record with us</div>
     <h2 class="section__title">Building something that fits the thesis? Let's talk.</h2>
     <p class="section__lead" style="margin-bottom: 3rem;">Founders, operators, and investors working on AI infrastructure, autonomous systems, energy, defense, and supply chains.</p>
@@ -517,6 +621,149 @@
     </div>
   </div>
 </footer>
+
+<script>
+  // 1. Split text into characters for Anime.js
+  const textWrapper = document.querySelector('#hero-title');
+  textWrapper.innerHTML = textWrapper.textContent.replace(/\S/g, "<span class='word'><span class='char'>$&</span></span>");
+
+  // 2. Anime.js Timeline for Hero Section (Boot Sequence)
+  const heroTimeline = anime.timeline({ loop: false });
+
+  heroTimeline
+    .add({
+      targets: '.el-eyebrow',
+      opacity: [0, 1],
+      translateY: [10, 0],
+      easing: "easeOutExpo",
+      duration: 1000,
+      delay: 200
+    })
+    .add({
+      targets: '.char',
+      translateY: ["100%", "0%"],
+      opacity: [0, 1],
+      easing: "easeOutExpo",
+      duration: 1200,
+      delay: (el, i) => 20 * i
+    }, "-=600")
+    .add({
+      targets: '.el-sub',
+      opacity: [0, 1],
+      translateY: [20, 0],
+      easing: "easeOutExpo",
+      duration: 1000
+    }, "-=800")
+    .add({
+      targets: '.el-actions',
+      opacity: [0, 1],
+      translateY: [20, 0],
+      easing: "easeOutExpo",
+      duration: 1000
+    }, "-=800")
+    .add({
+      targets: '.el-meta',
+      opacity: [0, 1],
+      easing: "linear",
+      duration: 1000
+    }, "-=500");
+
+  // 3. Scroll Interactions for Navbar and Sections
+  window.addEventListener('scroll', () => {
+    const nav = document.getElementById('navbar');
+    if (window.scrollY > 50) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+  });
+
+  // 4. Interactive Node Network Canvas (Defense Tech Radar Vibe)
+  const canvas = document.getElementById('network-canvas');
+  const ctx = canvas.getContext('2d');
+  let width, height, particles;
+
+  function initCanvas() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    particles = [];
+    
+    // Create particles
+    const particleCount = window.innerWidth < 768 ? 40 : 100;
+    for(let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        radius: Math.random() * 1.5 + 0.5
+      });
+    }
+  }
+
+  let mouse = { x: null, y: null };
+  window.addEventListener('mousemove', (e) => {
+    mouse.x = e.x;
+    mouse.y = e.y;
+  });
+
+  function animateCanvas() {
+    requestAnimationFrame(animateCanvas);
+    ctx.clearRect(0, 0, width, height);
+    
+    ctx.fillStyle = 'rgba(232, 146, 74, 0.8)';
+    ctx.lineWidth = 0.5;
+
+    for(let i = 0; i < particles.length; i++) {
+      let p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // Bounce off walls
+      if(p.x < 0 || p.x > width) p.vx *= -1;
+      if(p.y < 0 || p.y > height) p.vy *= -1;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Connect particles
+      for(let j = i + 1; j < particles.length; j++) {
+        let p2 = particles[j];
+        let dx = p.x - p2.x;
+        let dy = p.y - p2.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+
+        if(dist < 120) {
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(232, 146, 74, ${0.2 - dist/600})`;
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+      }
+
+      // Mouse interaction (repel slightly)
+      if (mouse.x != null) {
+        let dx = p.x - mouse.x;
+        let dy = p.y - mouse.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 150) {
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(244, 241, 234, ${0.3 - dist/500})`;
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(mouse.x, mouse.y);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  window.addEventListener('resize', initCanvas);
+  initCanvas();
+  animateCanvas();
+
+</script>
 
 </body>
 </html>
